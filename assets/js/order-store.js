@@ -89,7 +89,7 @@
         throw new StoreError('slot_unavailable', 'Ce créneau est passé.');
       }
       const now = new Date().toISOString();
-      const lines = items.map((i) => ({ name: i.name, unitPriceCents: i.unitPriceCents, quantity: i.quantity, lineTotalCents: i.unitPriceCents * i.quantity }));
+      const lines = items.map((i) => ({ name: i.name, extras: i.extras || [], unitPriceCents: i.unitPriceCents, quantity: i.quantity, lineTotalCents: i.unitPriceCents * i.quantity }));
       const order = {
         id: uuid(), ref: newRef(), status: 'pending',
         pickup: { date: input.pickupDate, slot: input.pickupSlot },

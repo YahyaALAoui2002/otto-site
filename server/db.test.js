@@ -164,3 +164,28 @@ test('export : toutes les tables brutes, au format relu par admin/index.html', (
   assert.equal(dump.tables.orders.length, 1);
   assert.equal(dump.tables.notifications.length, 2);
 });
+
+test('suppléments : prix ajoutés côté serveur, un seul par groupe, lignes distinctes', () => {
+  const db = freshDb();
+  const { client } = store.resolveSession(db, null, 'ua');
+  const order = store.createOrder(db, client.id, {
+    ...orderInput(db),
+    items: [
+      { name: 'Margherita', quantity: 1, extras: ['Burrata', 'Parmesan'], unitPriceCents: 1 },
+      { name: 'Margherita', quantity: 2 },
+      { name: 'Margherita', quantity: 1, extras: ['Parmesan', 'Burrata'] },
+    ],
+  });
+  assert.equal(order.items.length, 2);
+  const withExtras = order.items.find((i) => i.extras.length);
+  assert.deepEqual(withExtras.extras, ['Parmesan', 'Burrata'], 'ordre de la carte');
+  assert.equal(withExtras.quantity, 2);
+  assert.equal(withExtras.unitPriceCents, 1200 + 100 + 300);
+  assert.equal(order.totalCents, 2 * 1600 + 2 * 1200);
+  const bad = (extras, name = 'Margherita') => assert.throws(
+    () => store.createOrder(db, client.id, { ...orderInput(db), items: [{ name, quantity: 1, extras }] }), { code: 'invalid_extras' });
+  bad(['Burrata', 'Bufala']);           // deux fromages du même groupe
+  bad(['Jambon de Parme']);             // supplément d'un autre plat
+  bad(['Burratina'], 'Tiramisù Classico'); // plat sans supplément
+  bad('Burrata');
+});

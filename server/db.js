@@ -58,6 +58,12 @@ function open(file = process.env.OTTO_DB || path.join(__dirname, '..', 'data', '
   fs.mkdirSync(path.dirname(file), { recursive: true });
   const db = new DatabaseSync(file);
   db.exec(fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8'));
+  // Colonnes ajoutées après coup : CREATE TABLE IF NOT EXISTS ne touche pas une base existante.
+  for (const [table, column] of [['menu_items', 'extras'], ['order_items', 'extras']]) {
+    if (!db.prepare(`PRAGMA table_info(${table})`).all().some((c) => c.name === column)) {
+      db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} TEXT`);
+    }
+  }
   return db;
 }
 
@@ -68,22 +74,33 @@ function tx(db, fn) {
 
 // La carte fait foi dans commander.html (data-name / data-price par catégorie) :
 // on la relit au démarrage pour ne jamais avoir deux sources de prix.
+// Suppléments : data-extras="Parmesan:1|Burrata:3:fromage|…" (nom:prix[:groupe],
+// un seul choix possible par groupe).
+function parseExtras(attr) {
+  if (!attr) return [];
+  return attr.split('|').map((e) => {
+    const [name, price, group] = e.split(':').map((s) => s.trim());
+    return { name, price_cents: Math.round(Number(price) * 100), group: group || null };
+  }).filter((e) => e.name && Number.isFinite(e.price_cents) && e.price_cents >= 0);
+}
+
 function syncMenu(db, htmlFile = path.join(__dirname, '..', 'commander.html')) {
   const html = fs.readFileSync(htmlFile, 'utf8');
   const decode = (s) => s.replace(/&amp;/g, '&').replace(/&#39;|&apos;/g, "'").replace(/&quot;/g, '"');
   const found = [];
   for (const block of html.split(/data-cat="/).slice(1)) {
     const category = block.slice(0, block.indexOf('"'));
-    for (const m of block.matchAll(/class="order-item" data-name="([^"]+)" data-price="(\d+(?:\.\d+)?)"/g)) {
-      found.push({ name: decode(m[1]), category, price_cents: Math.round(Number(m[2]) * 100) });
+    for (const m of block.matchAll(/class="order-item" data-name="([^"]+)" data-price="(\d+(?:\.\d+)?)"(?: data-extras="([^"]*)")?/g)) {
+      const extras = parseExtras(m[3] && decode(m[3]));
+      found.push({ name: decode(m[1]), category, price_cents: Math.round(Number(m[2]) * 100), extras: extras.length ? JSON.stringify(extras) : null });
     }
   }
   if (!found.length) throw new Error('Carte introuvable dans commander.html');
   tx(db, () => {
     db.exec('UPDATE menu_items SET active = 0');
-    const up = db.prepare(`INSERT INTO menu_items (name, category, price_cents, active) VALUES (?, ?, ?, 1)
-      ON CONFLICT (name) DO UPDATE SET category = excluded.category, price_cents = excluded.price_cents, active = 1`);
-    found.forEach((i) => up.run(i.name, i.category, i.price_cents));
+    const up = db.prepare(`INSERT INTO menu_items (name, category, price_cents, extras, active) VALUES (?, ?, ?, ?, 1)
+      ON CONFLICT (name) DO UPDATE SET category = excluded.category, price_cents = excluded.price_cents, extras = excluded.extras, active = 1`);
+    found.forEach((i) => up.run(i.name, i.category, i.price_cents, i.extras));
   });
   return found.length;
 }
@@ -169,15 +186,30 @@ function validateOrder(db, input) {
   if (!Array.isArray(input.items) || !input.items.length || input.items.length > 40) {
     throw new HttpError(422, 'invalid_items', 'Panier vide.');
   }
-  const menu = db.prepare('SELECT id, name, price_cents FROM menu_items WHERE name = ? AND active = 1');
+  const menu = db.prepare('SELECT id, name, price_cents, extras FROM menu_items WHERE name = ? AND active = 1');
   const merged = new Map();
   for (const it of input.items) {
     const item = menu.get(String(it?.name || ''));
     const qty = Number(it?.quantity);
     if (!item) throw new HttpError(422, 'unknown_item', `Plat inconnu : ${it?.name}`);
     if (!Number.isInteger(qty) || qty < 1 || qty > 9) throw new HttpError(422, 'invalid_quantity', 'Quantité invalide.');
-    const prev = merged.get(item.id);
-    merged.set(item.id, { ...item, quantity: Math.min(9, (prev?.quantity || 0) + qty) });
+    // Suppléments : uniquement ceux de ce plat, un seul par groupe, dans l'ordre de la carte.
+    const allowed = item.extras ? JSON.parse(item.extras) : [];
+    const asked = it?.extras == null ? [] : it.extras;
+    if (!Array.isArray(asked) || asked.length > allowed.length) throw new HttpError(422, 'invalid_extras', 'Suppléments invalides.');
+    const picked = allowed.filter((e) => asked.includes(e.name));
+    const groups = picked.map((e) => e.group).filter(Boolean);
+    if (picked.length !== new Set(asked).size || new Set(groups).size !== groups.length) {
+      throw new HttpError(422, 'invalid_extras', `Suppléments invalides pour ${item.name}.`);
+    }
+    const extras = picked.map((e) => e.name).join(' + ') || null;
+    const key = `${item.id}|${extras || ''}`;
+    const prev = merged.get(key);
+    merged.set(key, {
+      id: item.id, name: item.name, extras,
+      price_cents: item.price_cents + picked.reduce((t, e) => t + e.price_cents, 0),
+      quantity: Math.min(9, (prev?.quantity || 0) + qty),
+    });
   }
   const items = [...merged.values()].map((i) => ({ ...i, line_total_cents: i.price_cents * i.quantity }));
   return { name, email, phone, notes: notes || null, date, slot, items, total: items.reduce((t, i) => t + i.line_total_cents, 0) };
@@ -197,9 +229,9 @@ function createOrder(db, clientId, input) {
     db.prepare(`INSERT INTO orders (id, ref, client_id, status, pickup_date, pickup_slot, customer_name, customer_email,
       customer_phone, notes, total_cents, created_at, updated_at) VALUES (?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
       .run(id, ref, clientId, v.date, v.slot, v.name, v.email, v.phone, v.notes, v.total, now, now);
-    const line = db.prepare(`INSERT INTO order_items (order_id, menu_item_id, name, unit_price_cents, quantity, line_total_cents)
-      VALUES (?, ?, ?, ?, ?, ?)`);
-    v.items.forEach((i) => line.run(id, i.id, i.name, i.price_cents, i.quantity, i.line_total_cents));
+    const line = db.prepare(`INSERT INTO order_items (order_id, menu_item_id, name, extras, unit_price_cents, quantity, line_total_cents)
+      VALUES (?, ?, ?, ?, ?, ?, ?)`);
+    v.items.forEach((i) => line.run(id, i.id, i.name, i.extras, i.price_cents, i.quantity, i.line_total_cents));
     db.prepare('INSERT INTO order_events (order_id, status, actor, created_at) VALUES (?, ?, ?, ?)').run(id, 'pending', 'client', now);
     db.prepare('UPDATE clients SET name = ?, email = ?, phone = ?, last_seen_at = ? WHERE id = ?').run(v.name, v.email, v.phone, now, clientId);
     notify(db, getOrderRow(db, id), 'pending');
@@ -210,7 +242,7 @@ function createOrder(db, clientId, input) {
 const getOrderRow = (db, id) => db.prepare('SELECT * FROM orders WHERE id = ?').get(id);
 
 function serializeOrder(db, o) {
-  const items = db.prepare('SELECT name, unit_price_cents, quantity, line_total_cents FROM order_items WHERE order_id = ? ORDER BY id').all(o.id);
+  const items = db.prepare('SELECT name, extras, unit_price_cents, quantity, line_total_cents FROM order_items WHERE order_id = ? ORDER BY id').all(o.id);
   return {
     id: o.id,
     ref: o.ref,
@@ -220,7 +252,7 @@ function serializeOrder(db, o) {
     pickup: { date: o.pickup_date, slot: o.pickup_slot },
     customer: { name: o.customer_name, email: o.customer_email, phone: o.customer_phone },
     notes: o.notes,
-    items: items.map((i) => ({ name: i.name, unitPriceCents: i.unit_price_cents, quantity: i.quantity, lineTotalCents: i.line_total_cents })),
+    items: items.map((i) => ({ name: i.name, extras: i.extras ? i.extras.split(' + ') : [], unitPriceCents: i.unit_price_cents, quantity: i.quantity, lineTotalCents: i.line_total_cents })),
     totalCents: o.total_cents,
     currency: o.currency,
     paymentMethod: o.payment_method,

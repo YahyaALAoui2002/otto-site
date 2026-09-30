@@ -5,7 +5,7 @@
 //   GET  /api/health
 //   GET  /api/session                       → profil du client (pré-remplissage)
 //   GET  /api/slots?date=YYYY-MM-DD         → créneaux + places restantes
-//   POST /api/orders                        → { items:[{name,quantity}], pickupDate, pickupSlot, customer:{name,email,phone}, notes }
+//   POST /api/orders                        → { items:[{name,quantity,extras?}], pickupDate, pickupSlot, customer:{name,email,phone}, notes }
 //   GET  /api/orders?days=7                 → { active:[…], past:[…] }
 //   GET  /api/orders/:id
 //   POST /api/orders/:id/cancel

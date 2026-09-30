@@ -37,7 +37,8 @@ CREATE TABLE IF NOT EXISTS menu_items (
   name          TEXT NOT NULL UNIQUE,
   category      TEXT NOT NULL,
   price_cents   INTEGER NOT NULL CHECK (price_cents >= 0),
-  active        INTEGER NOT NULL DEFAULT 1
+  active        INTEGER NOT NULL DEFAULT 1,
+  extras        TEXT                             -- suppléments possibles, JSON : [{ name, price_cents, group }]
 );
 
 CREATE TABLE IF NOT EXISTS orders (
@@ -73,7 +74,8 @@ CREATE TABLE IF NOT EXISTS order_items (
   order_id          TEXT NOT NULL REFERENCES orders (id) ON DELETE CASCADE,
   menu_item_id      INTEGER REFERENCES menu_items (id),
   name              TEXT NOT NULL,
-  unit_price_cents  INTEGER NOT NULL,
+  extras            TEXT,                        -- suppléments choisis : « Parmesan + Burrata », NULL si aucun
+  unit_price_cents  INTEGER NOT NULL,            -- plat + suppléments
   quantity          INTEGER NOT NULL CHECK (quantity BETWEEN 1 AND 9),
   line_total_cents  INTEGER NOT NULL
 );

@@ -7,6 +7,8 @@
 // Même script pour commander.html et en/commander.html : les textes dépendent de <html lang>.
 // Les data-name restent en français (la carte de référence côté serveur) ;
 // en anglais, data-label donne le nom affiché.
+// Suppléments : data-extras="Parmesan:1|Burrata:3:fromage|…" (nom:prix[:groupe]) ;
+// un seul choix par groupe. Le « + » d'un plat qui en a ouvre le panneau de choix.
 
 const ORDER_I18N = {
   fr: {
@@ -33,6 +35,15 @@ const ORDER_I18N = {
     historyActive: (a, p) => `${a} en cours${p ? ` · ${p} ces 7 derniers jours` : ''}`,
     historyPast: 'Ces 7 derniers jours',
     notice: null, // titre et texte fournis tels quels par le store
+    extraLabels: null, // noms des suppléments : ceux de la carte
+    extrasPaid: 'Suppléments',
+    extrasFree: 'Sur demande',
+    extrasTitle: (dish) => `Votre ${dish}, à votre goût`,
+    extrasGroups: { fromage: 'Fromage — un seul au choix' },
+    extrasAdd: (price) => `Ajouter · ${price}`,
+    extrasCancel: 'Annuler',
+    plain: 'Sans supplément',
+    removeLine: (label) => `Retirer : ${label}`,
   },
   en: {
     locale: 'en-GB',
@@ -61,6 +72,7 @@ const ORDER_I18N = {
       storage_full: 'We couldn’t save your order on this device.',
       not_found: 'Order not found.',
       not_cancellable: 'Too late to cancel online — please call us on 09 87 14 08 50.',
+      invalid_extras: 'One of the extras in your cart is no longer available.',
       network: 'The server isn’t responding.',
     },
     toastTitle: (name) => `See you soon, ${name}!`,
@@ -82,6 +94,23 @@ const ORDER_I18N = {
       order_cancelled: (ref) => ['Order cancelled', `Your order ${ref} has been cancelled.`],
       order_reminder: (ref) => ['Reminder: pickup soon', `Your order ${ref} will be ready shortly at 53 bis Bd Arago. Payment on pickup.`],
     },
+    extraLabels: {
+      'Parmesan': 'Parmesan',
+      'Burrata': 'Burrata',
+      'Bufala': 'Buffalo mozzarella',
+      'Stracciatella': 'Stracciatella',
+      'Burratina': 'Burratina',
+      'Jambon de Parme': 'Parma ham',
+      'Version végétarienne': 'Vegetarian version',
+    },
+    extrasPaid: 'Extras',
+    extrasFree: 'On request',
+    extrasTitle: (dish) => `Your ${dish}, your way`,
+    extrasGroups: { fromage: 'Cheese — pick one' },
+    extrasAdd: (price) => `Add · ${price}`,
+    extrasCancel: 'Cancel',
+    plain: 'No extras',
+    removeLine: (label) => `Remove: ${label}`,
   },
 };
 
@@ -116,36 +145,201 @@ document.addEventListener('DOMContentLoaded', () => {
   today.setHours(0, 0, 0, 0);
   dateInput.min = toISO(today);
 
+  // Panier : une ligne par plat + combinaison de suppléments.
+  // clé « Margherita|Parmesan+Burrata » → { name, extras: ['Parmesan', 'Burrata'], qty }
   const state = { date: toISO(today), cart: new Map(), step: 1 };
 
   // ---- Panier ----
   const items = [...form.querySelectorAll('.order-item')];
-  const priceOf = (name) => Number(items.find((li) => li.dataset.name === name).dataset.price);
-  const labelOf = (name) => items.find((li) => li.dataset.name === name)?.dataset.label || name;
-  const cartCount = () => [...state.cart.values()].reduce((n, q) => n + q, 0);
-  const cartTotal = () => [...state.cart].reduce((t, [name, q]) => t + q * priceOf(name), 0);
+  const itemOf = (name) => items.find((li) => li.dataset.name === name);
+  const parseExtras = (attr) => (attr ? attr.split('|').map((e) => {
+    const [name, price, group] = e.split(':').map((x) => x.trim());
+    return { name, price: Number(price), group: group || null };
+  }) : []);
+  const EXTRAS = new Map(items.map((li) => [li.dataset.name, parseExtras(li.dataset.extras)]));
+  const priceOf = (name) => Number(itemOf(name).dataset.price);
+  const labelOf = (name) => itemOf(name)?.dataset.label || name;
+  const extraLabel = (name) => T.extraLabels?.[name] || name;
+  const unitPrice = (line) => priceOf(line.name)
+    + line.extras.reduce((t, x) => t + (EXTRAS.get(line.name).find((e) => e.name === x)?.price || 0), 0);
+  const lineLabel = (name, extras = []) => [labelOf(name), ...extras.map(extraLabel)].join(' + ');
+  const linesOf = (name) => [...state.cart.values()].filter((l) => l.name === name);
+  const dishCount = (name) => linesOf(name).reduce((n, l) => n + l.qty, 0);
+  const cartCount = () => [...state.cart.values()].reduce((n, l) => n + l.qty, 0);
+  const cartTotal = () => [...state.cart.values()].reduce((t, l) => t + l.qty * unitPrice(l), 0);
   const pickedTime = () => form.querySelector('input[name="time"]:checked');
   const articles = T.articles;
 
-  const renderItem = (li) => {
-    const qty = state.cart.get(li.dataset.name) || 0;
+  // Ajoute (ou retire, delta < 0) au panier, sans dépasser MAX_QTY par plat ;
+  // les suppléments suivent l'ordre de la carte.
+  function addLine(name, extras, delta) {
+    const sorted = EXTRAS.get(name).filter((e) => extras.includes(e.name)).map((e) => e.name);
+    const key = `${name}|${sorted.join('+')}`;
+    const line = state.cart.get(key) || { name, extras: sorted, qty: 0 };
+    const others = dishCount(name) - (state.cart.has(key) ? line.qty : 0);
+    line.qty = Math.max(0, Math.min(line.qty + delta, MAX_QTY - others));
+    if (line.qty) state.cart.set(key, line); else state.cart.delete(key);
+  }
+
+  function cartChanged() {
+    items.forEach(renderItem);
+    if (cartCount()) itemsError.hidden = true;
+    refreshTabCounts();
+    refreshSummary();
+  }
+
+  function renderItem(li) {
+    const name = li.dataset.name;
+    const qty = dishCount(name);
     li.querySelector('.order-qty-val').textContent = qty;
     const [minus, plus] = li.querySelectorAll('.order-qty-btn');
     minus.disabled = qty <= 0;
     plus.disabled = qty >= MAX_QTY;
     li.classList.toggle('is-picked', qty > 0);
-  };
+
+    // Détail des lignes sous le plat dès qu'un supplément est choisi :
+    // indispensable sur mobile, où le panier latéral est masqué.
+    const lines = linesOf(name);
+    let list = li.querySelector('.order-item-lines');
+    if (!lines.some((l) => l.extras.length)) { list?.remove(); return; }
+    if (!list) {
+      list = document.createElement('ul');
+      list.className = 'order-item-lines';
+      const panel = li.querySelector('.order-extras');
+      if (panel) panel.before(list); else li.appendChild(list);
+    }
+    list.replaceChildren(...lines.map((l) => {
+      const row = document.createElement('li');
+      row.innerHTML = '<span class="order-item-line-qty"></span><span class="order-item-line-name"></span>'
+        + '<span class="order-item-line-price"></span><button type="button" class="order-item-line-del">×</button>';
+      row.children[0].textContent = `${l.qty}×`;
+      row.children[1].textContent = l.extras.length ? `+ ${l.extras.map(extraLabel).join(', ')}` : T.plain;
+      row.children[2].textContent = T.money(l.qty * unitPrice(l));
+      const del = row.children[3];
+      del.setAttribute('aria-label', T.removeLine(lineLabel(name, l.extras)));
+      del.addEventListener('click', () => {
+        addLine(name, l.extras, -1);
+        cartChanged();
+        (li.querySelector('.order-item-line-del') || plus).focus();
+      });
+      return row;
+    }));
+  }
+
+  // Mention des suppléments sous la description, d'après data-extras.
+  items.forEach((li) => {
+    const defs = EXTRAS.get(li.dataset.name);
+    if (!defs.length) return;
+    const hint = document.createElement('span');
+    hint.className = 'order-item-extras';
+    hint.textContent = `${defs.some((e) => e.price > 0) ? T.extrasPaid : T.extrasFree} · `
+      + defs.map((e) => (e.price ? `${extraLabel(e.name)} +${T.money(e.price)}` : extraLabel(e.name))).join(' · ');
+    li.querySelector('.order-item-body').appendChild(hint);
+  });
+
+  // ---- Panneau de suppléments : s'ouvre sous le plat au clic sur « + » ----
+  function closeExtras(li, { focus = false } = {}) {
+    const panel = li.querySelector('.order-extras');
+    if (!panel) return;
+    panel.remove();
+    li.classList.remove('is-customizing');
+    if (focus) li.querySelector('.order-qty-btn[data-step="1"]').focus();
+  }
+
+  function openExtras(li) {
+    items.forEach((other) => { if (other !== li) closeExtras(other); });
+    const open = li.querySelector('.order-extras');
+    if (open) { open.querySelector('.order-extras-add').focus(); return; }
+    const name = li.dataset.name;
+    const panel = document.createElement('div');
+    panel.className = 'order-extras';
+    panel.setAttribute('role', 'group');
+    panel.setAttribute('aria-label', T.extrasTitle(labelOf(name)));
+    const title = document.createElement('p');
+    title.className = 'order-extras-title';
+    title.textContent = T.extrasTitle(labelOf(name));
+    panel.appendChild(title);
+
+    // Suppléments libres d'abord, puis un bloc par groupe (un seul choix).
+    const blocks = [];
+    EXTRAS.get(name).forEach((e) => {
+      let block = blocks.find((b) => b.group === e.group);
+      if (!block) blocks.push(block = { group: e.group, defs: [] });
+      block.defs.push(e);
+    });
+    blocks.forEach(({ group, defs }) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'order-extras-opts';
+      if (group) {
+        const legend = document.createElement('p');
+        legend.className = 'order-extras-legend';
+        legend.textContent = T.extrasGroups?.[group] || group;
+        wrap.appendChild(legend);
+      }
+      defs.forEach((e) => {
+        const label = document.createElement('label');
+        label.className = 'order-extra';
+        label.innerHTML = '<input type="checkbox"><span class="order-extra-name"></span><span class="order-extra-price"></span>';
+        const input = label.querySelector('input');
+        input.value = e.name;
+        if (group) input.dataset.group = group;
+        label.querySelector('.order-extra-name').textContent = extraLabel(e.name);
+        label.querySelector('.order-extra-price').textContent = e.price ? `+${T.money(e.price)}` : T.money(0);
+        wrap.appendChild(label);
+      });
+      panel.appendChild(wrap);
+    });
+
+    const actions = document.createElement('div');
+    actions.className = 'order-extras-actions';
+    actions.innerHTML = '<button type="button" class="order-extras-cancel"></button><button type="button" class="order-extras-add"></button>';
+    const cancel = actions.querySelector('.order-extras-cancel');
+    const add = actions.querySelector('.order-extras-add');
+    cancel.textContent = T.extrasCancel;
+    panel.appendChild(actions);
+
+    const checked = () => [...panel.querySelectorAll('input:checked')].map((i) => i.value);
+    const refreshAdd = () => { add.textContent = T.extrasAdd(T.money(unitPrice({ name, extras: checked() }))); };
+    panel.addEventListener('change', (e) => {
+      const g = e.target.dataset.group;
+      if (g && e.target.checked) {
+        panel.querySelectorAll(`input[data-group="${g}"]`).forEach((i) => { if (i !== e.target) i.checked = false; });
+      }
+      refreshAdd();
+    });
+    panel.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { e.stopPropagation(); closeExtras(li, { focus: true }); }
+      // Entrée sur une case = ajouter, et non passer à l'étape suivante.
+      if (e.key === 'Enter' && e.target.matches('input')) { e.preventDefault(); add.click(); }
+    });
+    cancel.addEventListener('click', () => closeExtras(li, { focus: true }));
+    add.addEventListener('click', () => {
+      addLine(name, checked(), 1);
+      closeExtras(li, { focus: true });
+      cartChanged();
+    });
+    refreshAdd();
+
+    li.appendChild(panel);
+    li.classList.add('is-customizing');
+    panel.querySelector('input').focus({ preventScroll: true });
+    panel.scrollIntoView({ block: 'nearest', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+  }
 
   items.forEach((li) => {
     li.querySelectorAll('.order-qty-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
         const name = li.dataset.name;
-        const qty = Math.max(0, Math.min(MAX_QTY, (state.cart.get(name) || 0) + Number(btn.dataset.step)));
-        if (qty) state.cart.set(name, qty); else state.cart.delete(name);
-        renderItem(li);
-        if (cartCount()) itemsError.hidden = true;
-        refreshTabCounts();
-        refreshSummary();
+        if (Number(btn.dataset.step) > 0) {
+          if (EXTRAS.get(name).length) { openExtras(li); return; }
+          addLine(name, [], 1);
+        } else {
+          // « − » retire la dernière variante ajoutée de ce plat.
+          const last = linesOf(name).pop();
+          if (last) addLine(name, last.extras, -1);
+          closeExtras(li);
+        }
+        cartChanged();
       });
     });
   });
@@ -173,7 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Pastille « n » sur chaque onglet : ce qui est déjà dans le panier.
   function refreshTabCounts() {
     form.querySelectorAll('.order-cat').forEach((cat) => {
-      const n = [...cat.querySelectorAll('.order-item')].reduce((s, li) => s + (state.cart.get(li.dataset.name) || 0), 0);
+      const n = [...cat.querySelectorAll('.order-item')].reduce((s, li) => s + dishCount(li.dataset.name), 0);
       const badge = form.querySelector(`[data-count-for="${cat.dataset.cat}"]`);
       badge.textContent = n;
       badge.hidden = n === 0;
@@ -265,12 +459,18 @@ document.addEventListener('DOMContentLoaded', () => {
     form.querySelector('.order-bar').classList.toggle('is-filled', n > 0);
 
     const list = $('order-recap-list');
-    list.replaceChildren(...[...state.cart].map(([name, q]) => {
+    list.replaceChildren(...[...state.cart.values()].map((l) => {
       const li = document.createElement('li');
       li.innerHTML = '<span class="order-recap-qty"></span><span class="order-recap-name"></span><span class="order-recap-price"></span>';
-      li.children[0].textContent = `${q}×`;
-      li.children[1].textContent = labelOf(name);
-      li.children[2].textContent = T.money(q * priceOf(name));
+      li.children[0].textContent = `${l.qty}×`;
+      li.children[1].textContent = labelOf(l.name);
+      if (l.extras.length) {
+        const sub = document.createElement('span');
+        sub.className = 'order-recap-extras';
+        sub.textContent = `+ ${l.extras.map(extraLabel).join(', ')}`;
+        li.children[1].appendChild(sub);
+      }
+      li.children[2].textContent = T.money(l.qty * unitPrice(l));
       return li;
     }));
     $('order-recap-empty').hidden = n > 0;
@@ -396,7 +596,7 @@ document.addEventListener('DOMContentLoaded', () => {
     submitBtn.setAttribute('aria-busy', 'true');
     try {
       order = await store.createOrder({
-        items: [...state.cart].map(([item, q]) => ({ name: item, quantity: q, unitPriceCents: priceOf(item) * 100 })),
+        items: [...state.cart.values()].map((l) => ({ name: l.name, extras: l.extras, quantity: l.qty, unitPriceCents: unitPrice(l) * 100 })),
         pickupDate: state.date,
         pickupSlot: time.value,
         customer: { name: form.elements.name.value, email: form.elements.email.value, phone: form.elements.phone.value },
@@ -415,7 +615,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const name = order.customer.name.split(' ')[0];
     const d = longDate.format(fromISO(order.pickup.date));
-    const lines = order.items.map((i) => `${i.quantity} × ${labelOf(i.name)}`).join(', ');
+    const lines = order.items.map((i) => `${i.quantity} × ${lineLabel(i.name, i.extras)}`).join(', ');
     $('resa-toast-title').textContent = T.toastTitle(name);
     $('resa-toast-body').textContent = T.toastBody({
       ref: order.ref, lines, total: euros(order.totalCents), date: d, slot: order.pickup.slot, email: order.customer.email,
@@ -437,6 +637,7 @@ document.addEventListener('DOMContentLoaded', () => {
     form.reset();
     prefillContact();
     state.cart.clear();
+    items.forEach((li) => closeExtras(li));
     items.forEach(renderItem);
     refreshTabCounts();
     setDate(toISO(today));
@@ -467,13 +668,12 @@ document.addEventListener('DOMContentLoaded', () => {
     ['name', 'email', 'phone'].forEach((k) => { if (profile[k] && !form.elements[k].value) form.elements[k].value = profile[k]; });
   }
 
-  // Remet une ancienne commande dans le panier (seulement les plats toujours à la carte).
+  // Remet une ancienne commande dans le panier (seulement les plats et suppléments toujours à la carte).
   function reorder(order) {
     state.cart.clear();
-    order.items.forEach((i) => { if (items.some((li) => li.dataset.name === i.name)) state.cart.set(i.name, i.quantity); });
-    items.forEach(renderItem);
-    refreshTabCounts();
-    refreshSummary();
+    order.items.forEach((i) => { if (itemOf(i.name)) addLine(i.name, i.extras || [], i.quantity); });
+    items.forEach((li) => closeExtras(li));
+    cartChanged();
     itemsError.hidden = true;
     if (state.step === 1) scrollToForm(); else showStep(1);
   }
@@ -488,7 +688,7 @@ document.addEventListener('DOMContentLoaded', () => {
     li.querySelector('.order-history-ref').textContent = order.ref;
     li.querySelector('.order-history-status').textContent = STATUS_LABELS[order.status] || order.status;
     li.querySelector('.order-history-when').textContent = `${longDate.format(fromISO(order.pickup.date))} · ${order.pickup.slot}`;
-    li.querySelector('.order-history-lines').textContent = order.items.map((i) => `${i.quantity}× ${labelOf(i.name)}`).join(', ');
+    li.querySelector('.order-history-lines').textContent = order.items.map((i) => `${i.quantity}× ${lineLabel(i.name, i.extras)}`).join(', ');
     li.querySelector('.order-history-total').textContent = euros(order.totalCents);
     const actions = li.querySelector('.order-history-actions');
     const action = (label, fn, cls = '') => {

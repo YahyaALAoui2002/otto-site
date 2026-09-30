@@ -269,7 +269,7 @@ const COLUMNS = {
   name: 'Nom', email: 'Email', phone: 'Téléphone', last_seen_at: 'Vu le', order_count: 'Commandes', spent_cents: 'Dépensé',
   token_hash: 'Empreinte du jeton', user_agent: 'Navigateur', expires_at: 'Expire le', category: 'Catégorie', price_cents: 'Prix',
   active: 'Active', sold: 'Vendus', order_id: 'Commande (ID)', order_ref: 'Commande', menu_item_id: 'Plat (ID)',
-  unit_price_cents: 'Prix unitaire', quantity: 'Qté', line_total_cents: 'Total ligne', actor: 'Par', note: 'Note', kind: 'Type',
+  extras: 'Suppléments', unit_price_cents: 'Prix unitaire', quantity: 'Qté', line_total_cents: 'Total ligne', actor: 'Par', note: 'Note', kind: 'Type',
   channel: 'Canal', title: 'Titre', body: 'Message', recipient: 'Destinataire', attempts: 'Essais', last_error: 'Dernière erreur',
   next_attempt_at: 'Prochain essai', sent_at: 'Envoyé le', read_at: 'Lu le',
 };
@@ -368,8 +368,8 @@ const TABLE_DEFS = {
   },
   order_items: {
     label: 'Lignes de commande',
-    columns: ['id', 'order_id', 'menu_item_id', 'name', 'unit_price_cents', 'quantity', 'line_total_cents', 'order_ref', 'pickup_date'],
-    sort: [['id', 'desc']], dates: ['pickup_date'], search: ['order_id', 'order_ref', 'name'],
+    columns: ['id', 'order_id', 'menu_item_id', 'name', 'extras', 'unit_price_cents', 'quantity', 'line_total_cents', 'order_ref', 'pickup_date'],
+    sort: [['id', 'desc']], dates: ['pickup_date'], search: ['order_id', 'order_ref', 'name', 'extras'],
   },
   order_events: {
     label: 'Historique des statuts', columns: ['id', 'order_id', 'status', 'actor', 'note', 'created_at', 'order_ref'],
@@ -512,7 +512,7 @@ function createLocalBackend(ds) {
         pickup: { date: o.pickup_date, slot: o.pickup_slot },
         customer: { name: o.customer_name, email: o.customer_email, phone: o.customer_phone }, notes: o.notes,
         items: ds.order_items.filter((i) => i.order_id === id).sort((a, b) => a.id - b.id)
-          .map((i) => ({ name: i.name, unitPriceCents: i.unit_price_cents, quantity: i.quantity, lineTotalCents: i.line_total_cents })),
+          .map((i) => ({ name: i.name, extras: i.extras ? i.extras.split(' + ') : [], unitPriceCents: i.unit_price_cents, quantity: i.quantity, lineTotalCents: i.line_total_cents })),
         totalCents: o.total_cents, currency: o.currency, paymentMethod: o.payment_method,
         createdAt: o.created_at, updatedAt: o.updated_at, confirmedAt: o.confirmed_at, readyAt: o.ready_at,
         collectedAt: o.collected_at, cancelledAt: o.cancelled_at, clientId: o.client_id, cancelReason: o.cancel_reason,
@@ -1109,7 +1109,7 @@ async function openOrder(id, { keepScroll = false } = {}) {
     o.notes ? h('div', {}, h('h3', {}, 'Notes du client'), h('div', { class: 'note' }, o.notes)) : null,
     h('div', {}, h('h3', {}, 'Contenu'), h('table', { class: 'lines' },
       h('thead', {}, h('tr', {}, h('th', {}, 'Plat'), h('th', { class: 'num' }, 'Qté'), h('th', { class: 'num' }, 'P.U.'), h('th', { class: 'num' }, 'Total'))),
-      h('tbody', {}, o.items.map((i) => h('tr', {}, h('td', {}, i.name), h('td', { class: 'num' }, i.quantity),
+      h('tbody', {}, o.items.map((i) => h('tr', {}, h('td', {}, i.extras?.length ? `${i.name} + ${i.extras.join(' + ')}` : i.name), h('td', { class: 'num' }, i.quantity),
         h('td', { class: 'num' }, euro(i.unitPriceCents)), h('td', { class: 'num' }, euro(i.lineTotalCents))))),
       h('tfoot', {}, h('tr', {}, h('td', { colspan: '3' }, 'Total (paiement au retrait)'), h('td', { class: 'num' }, euro(o.totalCents)))))),
     h('div', {}, h('h3', {}, 'Historique'), h('ul', { class: 'timeline' }, d.events.map((e) => h('li', {},
