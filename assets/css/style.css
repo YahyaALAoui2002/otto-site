@@ -1,0 +1,1887 @@
+/* Otto — design tokens per docs/03-creative-direction.md (JARVIS_01/clients/otto) */
+
+:root {
+  --cream: #F7EFDD;
+  --cream-carte: #FFFCF5;
+  --terracotta: #B5502D;
+  --olive: #4B5C34;
+  --ink: #2B2620;
+  --cream-rgb: 247, 239, 221;
+  --ink-rgb: 43, 38, 32;
+  --terracotta-rgb: 181, 80, 45;
+  --olive-rgb: 75, 92, 52;
+  --sage: #DCE3C4;
+  --sage-rgb: 220, 227, 196;
+  --logo-green: #A9BB87;                                    /* pastille du logo Otto Pizza (otto-badge-clean.png) */
+  --logo-green-rgb: 169, 187, 135;
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-quote: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --container-max: 1200px;
+  --gutter: clamp(1.25rem, 4vw, 3rem);
+
+  /* Échelle d'espacement — rythme vertical/horizontal partagé par toutes les sections */
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2.5rem;
+  --space-xl: 4rem;
+  --space-2xl: 6rem;
+
+  --radius: 3px;                                            /* un seul rayon, partout */
+  --radius-lg: 14px;                                        /* exception assumée : cartes avis uniquement, rendu premium demandé */
+  --shadow-photo: 0 24px 50px -24px rgba(43, 38, 32, 0.45); /* teinté encre, jamais noir pur */
+  --shadow-card: 0 20px 40px -24px rgba(43, 38, 32, 0.35);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-weight: 400;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+img { max-width: 100%; display: block; }
+
+a { color: inherit; }
+
+:focus-visible {
+  outline: 2px solid var(--terracotta);
+  outline-offset: 2px;
+}
+
+.container {
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.1;
+  margin: 0 0 0.5em;
+}
+
+h1 { font-size: clamp(2.25rem, 5vw + 1rem, 4rem); }
+h2 { font-size: clamp(1.75rem, 3vw + 1rem, 2.75rem); }
+
+.quote {
+  font-family: var(--font-quote);
+  font-style: italic;
+  font-size: clamp(1.1rem, 1.5vw + 0.8rem, 1.4rem);
+  line-height: 1.4;
+}
+
+.eyebrow {
+  font-family: var(--font-body);
+  font-weight: 500;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  color: var(--terracotta);
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.85em 1.75em;
+  background: var(--terracotta);
+  color: var(--cream);
+  font-family: var(--font-body);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  border-radius: var(--radius);
+  transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), letter-spacing 0.25s var(--ease-out);
+}
+.btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(var(--ink-rgb), 0.18); letter-spacing: 0.03em; }
+.btn:active { transform: translateY(0); box-shadow: none; }
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid currentColor;
+  color: var(--ink);
+}
+
+/* ---------- Entrance reveal ---------- */
+/* Otto wordmark, curtain-style — plays once per browser tab on the homepage
+   (gated by sessionStorage in main.js), never on inner pages. A second
+   deliberate "bold" moment alongside the stamp-drop, justified because it
+   frames the whole visit rather than decorating a single section. */
+
+.site-reveal {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cream);
+  animation: reveal-curtain 1.3s var(--ease-out) 0.5s both;
+}
+.site-reveal-mark {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(2.75rem, 9vw, 5.5rem);
+  color: var(--ink);
+  opacity: 0;
+  transform: translateY(14px) scale(0.96);
+  animation: reveal-mark 0.9s var(--ease-out) 0.15s both;
+}
+
+@keyframes reveal-mark {
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes reveal-curtain {
+  0%, 60%  { opacity: 1; visibility: visible; }
+  100%     { opacity: 0; visibility: hidden; }
+}
+
+html.is-revealing { overflow: hidden; }
+
+/* ---------- Nav ---------- */
+
+.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--cream);
+  border-bottom: 1px solid rgba(var(--ink-rgb), 0.08);
+}
+
+.site-nav .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 72px;
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.4rem;
+  text-decoration: none;
+  color: var(--ink);
+  transition: opacity 0.25s ease;
+}
+.nav-logo:hover { opacity: 0.75; }
+.nav-logo-img {
+  display: block;
+  width: 54px;
+  height: 54px;
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.nav-links {
+  display: none;
+  gap: clamp(1.1rem, 1.8vw, 2rem);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.95rem;
+}
+
+.nav-links a {
+  position: relative;
+  white-space: nowrap;
+  text-decoration: none;
+  padding-bottom: 4px;
+}
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--terracotta);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s var(--ease-out);
+}
+.nav-links a:hover::after,
+.nav-links a[aria-current="page"]::after {
+  transform: scaleX(1);
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.lang-toggle {
+  display: flex;
+  gap: 0.35rem;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+.lang-toggle a {
+  text-decoration: none;
+  padding: 0.15em 0.4em;
+  color: rgba(var(--ink-rgb), 0.55);
+}
+.lang-toggle a[aria-current="true"] { color: var(--ink); border-bottom: 1px solid var(--terracotta); }
+
+.nav-toggle {
+  display: inline-flex;
+  flex-direction: column;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+.nav-toggle span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--ink);
+  margin: 4px 0;
+}
+
+@media (min-width: 1100px) {
+  .nav-links { display: flex; }
+  .nav-toggle { display: none; }
+}
+
+.nav-mobile-panel {
+  display: none;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.5rem var(--gutter) 2rem;
+  background: var(--cream);
+  border-bottom: 1px solid rgba(var(--ink-rgb), 0.08);
+}
+.nav-mobile-panel.is-open { display: flex; }
+.nav-mobile-panel a { text-decoration: none; font-size: 1.1rem; }
+
+@media (min-width: 1100px) {
+  .nav-mobile-panel { display: none !important; }
+}
+
+/* ---------- Hero (V5 — big wordmark + CTA trio) ---------- */
+/* Full-bleed editorial hero: the wood-fired photo carries the whole frame,
+   olivier watermark anchors the top-left corner from the paper menu, and a
+   bold "OTTO / PIZZA" wordmark now sits directly on the photo as the page's
+   one deliberate "bold" moment, followed by the tagline, description and a
+   trio of olive CTA badges echoing the logo's own disc treatment. */
+
+.hero {
+  position: relative;
+  background: var(--ink);
+  min-height: 100vh;
+}
+@supports (height: 100svh) {
+  .hero { min-height: 100svh; }
+}
+
+.hero-media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden; /* recadre le zoom d'entrée de la photo sans rogner l'ombre des badges */
+}
+.hero-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 42%;
+  transform: scale(1.06);
+  animation: hero-photo-settle 20s var(--ease-out) forwards;
+}
+@keyframes hero-photo-settle {
+  to { transform: scale(1); }
+}
+
+/* Tint dégradé encre — jamais noir pur — assombrit juste assez le bas de
+   la photo pour porter le titre crème. */
+.hero-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    180deg,
+    rgba(var(--ink-rgb), 0.32) 0%,
+    rgba(var(--ink-rgb), 0.04) 24%,
+    rgba(var(--ink-rgb), 0.1) 52%,
+    rgba(var(--ink-rgb), 0.85) 100%
+  );
+}
+
+/* Transition sculptée bas de hero → piliers : une courbe organique taillée dans
+   le crème, avec ombre portée pour un relief tactile — sans filet de contour.
+   Reste sous le titre/sous-titre/CTA (z-index 2). */
+.hero-divider {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  line-height: 0;
+  pointer-events: none;
+}
+.hero-divider svg {
+  display: block;
+  width: 100%;
+  height: clamp(48px, 8vw, 112px);
+}
+.hero-divider-front {
+  fill: var(--cream);
+  filter: drop-shadow(0 -10px 16px rgba(var(--ink-rgb), 0.3));
+}
+
+.hero-inner {
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+  padding-top: clamp(7rem, 26vw, 9rem);
+  padding-bottom: clamp(3rem, 8vw, 5.5rem);
+}
+
+.hero-brand { max-width: 640px; }
+
+/* Wordmark posé à même la photo : le seul moment "bold" de la page (repris de
+   l'ancien tampon qui tombait au chargement) — otto-09 §Passe 1, principe 2. */
+.hero-wordmark {
+  max-width: 12ch;
+  margin: 0 0 var(--space-sm);
+  color: var(--cream);
+  font-family: var(--font-display);
+  font-weight: 900;
+  line-height: 0.86;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  font-size: clamp(3.75rem, 9vw + 1.5rem, 8.5rem);
+  text-shadow: 0 8px 22px rgba(var(--ink-rgb), 0.45);
+}
+.hero-wordmark-line {
+  display: block;
+  opacity: 0;
+  transform: translateY(0.35em);
+  animation: hero-line-in 0.9s var(--ease-out) forwards;
+}
+.hero-wordmark-line:nth-child(2) { animation-delay: 0.15s; }
+@keyframes hero-line-in {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.hero-tagline {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.3rem, 1.6vw + 1rem, 1.85rem);
+  color: var(--cream);
+  margin: 0 0 var(--space-sm);
+  opacity: 0;
+  animation: hero-fade-in 0.9s var(--ease-out) 0.32s forwards;
+}
+
+.hero-sub {
+  font-family: var(--font-body);
+  font-size: clamp(1.05rem, 0.6vw + 0.95rem, 1.2rem);
+  line-height: 1.6;
+  color: rgba(var(--cream-rgb), 0.88);
+  max-width: 42ch;
+  margin: 0 0 var(--space-lg);
+  opacity: 0;
+  animation: hero-fade-in 0.9s var(--ease-out) 0.45s forwards;
+}
+
+/* Trio de badges ronds sauge — pâles et lisibles, posés à cheval sur le pli
+   crème pour faire le pont entre la photo et la section piliers, plutôt que
+   flotter uniquement sur la photo comme l'ancienne version tout-olive. */
+.hero-cta-group {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(0.85rem, 2vw, 1.5rem);
+  opacity: 0;
+  transform: translateY(clamp(26px, 4.6vw, 66px));
+  animation: hero-fade-in 0.9s var(--ease-out) 0.6s forwards;
+}
+/* ≥700px : grille calquée sur .pillars (même largeur utile 1060px − gouttières,
+   mêmes 3 colonnes, même gap) — chaque badge centré à l'aplomb de sa carte :
+   Notre carte → Le produit, Réservez → L'ambiance, Commander → Le quartier. */
+@media (min-width: 700px) {
+  .hero-cta-group {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(var(--space-lg), 5vw, 3rem);
+    justify-items: center;
+    max-width: calc(1060px - 2 * var(--gutter));
+    margin-inline: auto;
+  }
+}
+
+/* Badges ronds : même pastille sauge dégradée que le logo Otto Pizza
+   (otto-badge-clean.png), lettrage blanc arrondi + ombre portée franche
+   comme « OTTO PIZZA ». Toujours 1:1 — jamais une pilule ni un ovale. */
+.hero-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: clamp(118px, 6vw + 88px, 158px);
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  padding: 0 10%;
+  text-align: center;
+  text-decoration: none;
+  color: #ffffff;
+  /* Dosis ExtraBold : la plus proche du lettrage du logo — étroite, grasse,
+     terminaisons arrondies. Ombre franche décalée vers le bas-gauche, comme
+     sur « OTTO PIZZA ». */
+  font-family: 'Dosis', var(--font-body);
+  font-weight: 800;
+  font-size: clamp(0.92rem, 0.55vw + 0.76rem, 1.2rem);
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.035em;
+  text-wrap: balance;
+  hyphens: none;
+  text-shadow: -0.07em 0.07em 0 rgba(20, 24, 12, 0.9);
+  background: url("../img/otto-badge-clean.png") center / cover no-repeat;
+  box-shadow: 0 14px 26px -10px rgba(var(--ink-rgb), 0.45);
+  transition: transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+}
+.hero-cta:hover {
+  transform: translateY(-3px) scale(1.04);
+  box-shadow: 0 18px 30px -10px rgba(var(--ink-rgb), 0.4);
+}
+.hero-cta:focus-visible { outline: 2px solid var(--cream); outline-offset: 4px; }
+.hero-cta:active { transform: translateY(-1px) scale(1.01); }
+
+@keyframes hero-fade-in {
+  to { opacity: 1; }
+}
+
+/* Repère de scroll discret — s'efface de lui-même, jamais un widget flèche
+   générique (docs/03 §5) : un simple fil qui coule, à l'échelle du geste. */
+.hero-scroll-cue {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(1.25rem, 3vw, 2rem);
+  z-index: 2;
+  width: 1px;
+  height: 38px;
+  background: rgba(var(--cream-rgb), 0.45);
+  transform: translateX(-50%);
+  opacity: 0;
+  animation: hero-fade-in 0.8s ease 1.4s forwards;
+  display: none;
+}
+.hero-scroll-cue::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  margin-left: -2px;
+  border-radius: 50%;
+  background: var(--cream);
+  animation: scroll-cue-drop 2s ease-in-out infinite;
+}
+@keyframes scroll-cue-drop {
+  0%   { top: 0; opacity: 1; }
+  80%  { opacity: 0; }
+  100% { top: 28px; opacity: 0; }
+}
+
+@media (min-width: 700px) {
+  .hero-scroll-cue { display: block; }
+}
+
+@media (min-width: 900px) {
+  .hero-inner { padding-top: clamp(8rem, 14vw, 11rem); }
+}
+
+/* ---------- Sections ---------- */
+
+section { padding-block: clamp(3rem, 7vw, 6rem); }
+
+/* Piliers V4 — chaque pilier porte désormais une photo éditoriale (plutôt que
+   l'illustration au trait) : trois vignettes de même format, en triptyque égal,
+   pour que le regard compare les trois cartes plutôt que d'en hiérarchiser une.
+   Le filet en tête de colonne (façon menu papier) reste au-dessus de la photo. */
+.pillars-section { position: relative; padding-top: clamp(4rem, 9vw, 7rem); }
+
+.pillars-section .container { max-width: 1060px; }
+
+.pillars {
+  display: grid;
+  gap: var(--space-xl);
+  grid-template-columns: 1fr;
+}
+@media (min-width: 700px) {
+  .pillars {
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(var(--space-lg), 5vw, 3rem);
+    align-items: start;
+  }
+}
+
+.pillar {
+  padding-top: var(--space-md);
+  border-top: 2px solid rgba(var(--ink-rgb), 0.16);
+}
+
+/* Vignette photo : même ratio pour les trois piliers afin que le triptyque se lise
+   comme un ensemble ; le cadrage précis de chaque photo est réglé via
+   object-position ci-dessous plutôt qu'en pré-recadrant les fichiers sources. */
+.pillar-photo {
+  display: block;
+  margin: 0 0 var(--space-md);
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-photo);
+  background: rgba(var(--ink-rgb), 0.06);
+}
+.pillar-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.pillar:nth-child(1) .pillar-photo img { object-position: center; }
+.pillar:nth-child(2) .pillar-photo img { object-position: 45% 50%; }
+.pillar:nth-child(3) .pillar-photo img { object-position: 55% 50%; }
+
+.pillar h3 { font-size: 1.3rem; margin: 0 0 var(--space-2xs); }
+.pillar p { margin: 0; max-width: 32ch; color: rgba(var(--ink-rgb), 0.85); }
+
+/* Avis clients — marquee infini en CSS pur : la piste de cartes est déjà
+   dupliquée dans le HTML, et l'animation translateX(0 → -50%) tourne dès le
+   chargement, sans dépendre du JS. Pause douce (animation-play-state) au
+   survol/focus, jamais de gel au chargement. main.js affine seulement la
+   durée pour garder un rythme constant quelle que soit la largeur réelle
+   du contenu. */
+.reviews-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-sm) var(--space-lg);
+  margin-bottom: var(--space-xl);
+}
+.reviews-head h2 { margin: 0; }
+
+.reviews-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  margin: 0;
+  font-size: 0.95rem;
+  color: rgba(var(--ink-rgb), 0.75);
+  white-space: nowrap;
+}
+.reviews-rating-stars { color: var(--terracotta); font-size: 1rem; letter-spacing: 0.05em; }
+.reviews-rating strong { color: var(--ink); font-family: var(--font-display); font-size: 1.15rem; }
+
+.reviews-viewport {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  /* Fade the edges so cards entering/leaving the marquee don't hard-clip. */
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 var(--space-lg), #000 calc(100% - var(--space-lg)), transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 var(--space-lg), #000 calc(100% - var(--space-lg)), transparent 100%);
+}
+
+.reviews-track {
+  display: flex;
+  width: max-content;
+  gap: var(--space-lg);
+  margin: 0;
+  padding: var(--space-2xs) var(--space-2xs) var(--space-sm);
+  list-style: none;
+  animation: reviews-marquee var(--marquee-duration, 14s) linear infinite;
+  will-change: transform;
+}
+
+.reviews-viewport:hover .reviews-track,
+.reviews-viewport:focus-within .reviews-track {
+  animation-play-state: paused;
+}
+
+@keyframes reviews-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Slow way down instead of freezing outright — a static "Ce qu'on en dit"
+     reads as broken, but a calm crawl still respects motion sensitivity. */
+  .reviews-track { animation-duration: 240s; }
+}
+
+.review-card {
+  flex: 0 0 clamp(260px, 78vw, 320px);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-lg) var(--space-md) var(--space-md);
+  background: var(--cream-carte);
+  border: 1px solid rgba(var(--ink-rgb), 0.08);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.review-stars {
+  margin-bottom: var(--space-sm);
+  color: var(--terracotta);
+  font-size: 0.95rem;
+  letter-spacing: 0.15em;
+}
+
+.review-quote {
+  margin: 0 0 var(--space-md);
+  font-family: var(--font-quote);
+  font-style: italic;
+  font-size: 1.2rem;
+  line-height: 1.45;
+  color: var(--ink);
+}
+.review-quote p { margin: 0; }
+
+.review-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-top: auto;
+  padding-top: var(--space-sm);
+  border-top: 1px solid rgba(var(--ink-rgb), 0.1);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: rgba(var(--ink-rgb), 0.6);
+}
+.review-name { font-weight: 500; color: var(--ink); }
+.review-badge { display: inline-flex; align-items: center; gap: 0.4em; white-space: nowrap; }
+.review-badge-icon { width: 14px; height: 14px; flex: none; }
+
+.menu-preview-row {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 0.5rem;
+}
+.menu-preview-row .item {
+  flex: 0 0 78%;
+  scroll-snap-align: start;
+}
+@media (min-width: 800px) {
+  .menu-preview-row { overflow: visible; grid-template-columns: repeat(4, 1fr); display: grid; }
+  .menu-preview-row .item { flex: none; }
+}
+
+.menu-list { margin: 0; padding: 0; list-style: none; }
+.menu-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(var(--ink-rgb), 0.12);
+}
+.menu-list .name { font-family: var(--font-display); font-size: 1.05rem; }
+.menu-list .desc { font-size: 0.9rem; color: rgba(var(--ink-rgb), 0.65); margin-top: 0.2rem; }
+.menu-list .price { font-family: var(--font-body); font-weight: 500; white-space: nowrap; padding-top: 0.1rem; }
+.menu-list .desc { line-height: 1.5; max-width: 62ch; }
+.menu-list .name-sub { font-family: var(--font-body); font-size: 0.8rem; color: rgba(var(--ink-rgb), 0.6); white-space: nowrap; }
+.menu-list .extra { font-family: var(--font-quote); font-style: italic; font-size: 1rem; color: var(--olive); line-height: 1.35; margin-top: 0.25rem; }
+.menu-note { font-family: var(--font-quote); font-style: italic; font-size: 1.1rem; color: var(--olive); margin-top: 1rem; }
+
+/* Pizze : la photo passe en premier, puis nom + ingrédients, prix à droite. */
+.menu-list--photos li {
+  display: grid;
+  grid-template-columns: 88px 1fr auto;
+  align-items: center;
+  gap: 1rem;
+}
+.menu-list--photos .menu-thumb {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 4px;
+  background: rgba(var(--ink-rgb), 0.06);
+}
+.menu-list--photos .price { padding-top: 0; }
+@media (min-width: 700px) {
+  .menu-list--photos li { grid-template-columns: 128px 1fr auto; gap: 1.5rem; }
+}
+
+.coming-soon {
+  border: 1px dashed rgba(var(--ink-rgb), 0.3);
+  border-radius: 4px;
+  padding: 2rem;
+  text-align: center;
+  color: rgba(var(--ink-rgb), 0.65);
+}
+
+.access-row {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 800px) {
+  .access-row { grid-template-columns: 1fr 1fr; align-items: start; }
+}
+.map-embed {
+  aspect-ratio: 4 / 3;
+  background: rgba(var(--ink-rgb), 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(var(--ink-rgb), 0.5);
+  font-size: 0.85rem;
+}
+
+/* motif reveal — docs/03 §3, one-time stroke-in on first scroll into view */
+.motif {
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.motif.is-visible { opacity: 1; transform: translateY(0); }
+
+/* ---------- Motion réduite ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .site-reveal { display: none; }
+  .hero-media img { animation: none; transform: none; }
+  .hero-wordmark-line,
+  .hero-tagline,
+  .hero-sub { animation: none; opacity: 1; transform: none; }
+  .hero-cta-group { animation: none; opacity: 1; }
+  .hero-scroll-cue { animation: none; opacity: 0.5; }
+  .hero-scroll-cue::after { animation: none; opacity: 1; }
+  .motif { opacity: 1; transform: none; transition: none; }
+  .btn { transition: none; }
+}
+
+/* ---------- Footer ---------- */
+
+.site-footer {
+  background: var(--ink);
+  color: var(--cream);
+  padding-block: 3rem;
+}
+.footer-grid {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 800px) {
+  .footer-grid { grid-template-columns: repeat(3, 1fr); }
+}
+.site-footer a { color: var(--cream); text-decoration: none; opacity: 0.85; }
+.site-footer a:hover { opacity: 1; }
+/* Nav's lang-toggle colors are tuned for a cream background and go near-invisible
+   on the footer's dark ground (near-black on near-black) — override for context. */
+.site-footer .lang-toggle a { color: rgba(var(--cream-rgb), 0.6); opacity: 1; }
+.site-footer .lang-toggle a[aria-current="true"] { color: var(--cream); border-bottom-color: var(--terracotta); }
+.footer-copyright {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(var(--cream-rgb), 0.15);
+  font-size: 0.8rem;
+  opacity: 0.6;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- Réservation ---------- */
+/* Deux colonnes façon carnet de réservation de trattoria : à gauche la fiche
+   à remplir (papier carte, filets de menu, étapes numérotées), à droite
+   l'ambiance et les infos pratiques, collantes au scroll sur desktop.
+   Le vert Otto (olive) porte les sélections et le CTA ; la terracotta reste
+   l'accent éditorial (eyebrows, numéros d'étape), comme sur le reste du site. */
+
+.resa {
+  position: relative;
+  overflow: hidden;
+  overflow: clip; /* rogne l'olivier sans casser les éléments collants (panier, colonne infos) */
+  padding-block: clamp(2.5rem, 6vw, 5rem) clamp(3.5rem, 8vw, 6.5rem);
+}
+
+.resa-olivier {
+  position: absolute;
+  top: clamp(1rem, 3vw, 2.5rem);
+  right: clamp(-80px, -4vw, -24px);
+  width: clamp(180px, 22vw, 320px);
+  height: auto;
+  opacity: 0.16;
+  pointer-events: none;
+}
+.resa-olivier.is-visible { opacity: 0.16; }
+
+.resa-head { position: relative; max-width: 48rem; margin-bottom: clamp(2rem, 4vw, 3.25rem); }
+.resa-head .eyebrow { margin: 0 0 var(--space-xs); }
+.resa-head h1 { margin: 0 0 var(--space-xs); }
+.resa-head h1 .nowrap { white-space: nowrap; }
+.resa-lede { margin: 0; color: rgba(var(--ink-rgb), 0.75); }
+
+.resa-grid {
+  position: relative;
+  display: grid;
+  gap: clamp(2rem, 4vw, 3.5rem);
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+}
+@media (min-width: 960px) {
+  .resa-grid { grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); }
+  .resa-aside { position: sticky; top: calc(72px + var(--space-md)); }
+}
+
+/* -- Fiche de réservation -- */
+.resa-card {
+  min-width: 0;
+  background: var(--cream-carte);
+  border: 1px solid rgba(var(--ink-rgb), 0.1);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: clamp(1.25rem, 3.5vw, 2.5rem);
+}
+
+/* Étapes : filet de menu papier en tête, numéro en terracotta. */
+.resa-step {
+  padding-block: var(--space-md) var(--space-lg);
+  border-top: 1px solid rgba(var(--ink-rgb), 0.12);
+}
+.resa-step[hidden] { display: none; }
+.resa-card > .resa-step:first-child { border-top: 0; padding-top: 0; }
+.resa-step-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-sm);
+}
+.resa-step-num {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--terracotta);
+  letter-spacing: 0.04em;
+}
+.resa-step-title { margin: 0; font-size: 1.3rem; }
+
+/* Bandeau de jours — défile horizontalement, masque de fondu à droite. */
+.resa-days {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  padding: 2px 2px 10px;
+  margin-inline: -2px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--ink-rgb), 0.2) transparent;
+  -webkit-mask-image: linear-gradient(to right, #000 88%, transparent);
+  mask-image: linear-gradient(to right, #000 88%, transparent);
+}
+.resa-day {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 62px;
+  padding: 0.6rem 0.4rem 0.55rem;
+  border: 1px solid rgba(var(--ink-rgb), 0.14);
+  border-radius: 10px;
+  background: var(--cream);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s var(--ease-out);
+}
+.resa-day:hover { border-color: rgba(var(--olive-rgb), 0.6); transform: translateY(-1px); }
+.resa-day-name { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.65; }
+.resa-day-num { font-family: var(--font-display); font-size: 1.45rem; font-weight: 600; line-height: 1.15; }
+.resa-day-month { font-size: 0.72rem; opacity: 0.65; }
+.resa-day[aria-checked="true"] {
+  background: var(--olive);
+  border-color: var(--olive);
+  color: var(--cream);
+  box-shadow: 0 8px 16px -8px rgba(var(--olive-rgb), 0.8);
+}
+.resa-day[aria-checked="true"] .resa-day-name,
+.resa-day[aria-checked="true"] .resa-day-month { opacity: 0.85; }
+
+.resa-other-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: var(--space-xs);
+  font-size: 0.85rem;
+  color: rgba(var(--ink-rgb), 0.65);
+}
+.resa-other-date input {
+  padding: 0.4em 0.6em;
+  border: 1px solid rgba(var(--ink-rgb), 0.18);
+  border-radius: 8px;
+  background: var(--cream);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.9rem;
+  accent-color: var(--olive);
+}
+.resa-other-date input.is-active { border-color: var(--olive); box-shadow: 0 0 0 2px rgba(var(--olive-rgb), 0.25); }
+
+/* Compteur pilule */
+.resa-counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 5px;
+  border: 1px solid rgba(var(--ink-rgb), 0.14);
+  border-radius: 999px;
+  background: var(--cream);
+}
+.resa-counter output { min-width: 9.5rem; text-align: center; font-size: 1rem; }
+.resa-counter output strong { font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; margin-right: 0.15em; vertical-align: -0.08em; }
+.resa-counter-btn {
+  width: 42px; height: 42px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 50%;
+  background: var(--cream-carte);
+  box-shadow: inset 0 0 0 1px rgba(var(--ink-rgb), 0.14);
+  color: var(--ink);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.15s var(--ease-out);
+}
+.resa-counter-btn:hover:not(:disabled) { background: var(--olive); color: var(--cream); box-shadow: none; }
+.resa-counter-btn:active:not(:disabled) { transform: scale(0.92); }
+.resa-counter-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.resa-hint { margin: var(--space-xs) 0 0; font-size: 0.88rem; color: var(--terracotta); }
+.resa-hint a { font-weight: 500; }
+
+/* Créneaux */
+.resa-slots { display: grid; gap: var(--space-md); }
+.resa-slot-label {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-quote);
+  font-style: italic;
+  font-size: 1.15rem;
+  color: rgba(var(--ink-rgb), 0.8);
+}
+.resa-slot-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.resa-slot { cursor: pointer; }
+.resa-slot input { position: absolute; opacity: 0; pointer-events: none; }
+.resa-slot span {
+  display: block;
+  min-width: 4.6rem;
+  padding: 0.6em 0.9em;
+  text-align: center;
+  border: 1px solid rgba(var(--ink-rgb), 0.16);
+  border-radius: 999px;
+  background: var(--cream);
+  font-weight: 500;
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+.resa-slot:hover span { border-color: rgba(var(--olive-rgb), 0.6); }
+.resa-slot input:checked + span {
+  background: var(--olive);
+  border-color: var(--olive);
+  color: var(--cream);
+  box-shadow: 0 8px 16px -8px rgba(var(--olive-rgb), 0.8);
+}
+.resa-slot input:focus-visible + span { outline: 2px solid var(--terracotta); outline-offset: 2px; }
+.resa-slot input:disabled + span { opacity: 0.35; text-decoration: line-through; cursor: not-allowed; }
+.resa-error { margin: var(--space-xs) 0 0; font-size: 0.85rem; color: var(--terracotta); }
+
+/* Coordonnées — champs soulignés façon fiche papier */
+.resa-fields {
+  display: grid;
+  gap: var(--space-md) var(--space-md);
+  grid-template-columns: 1fr;
+}
+@media (min-width: 560px) {
+  .resa-fields { grid-template-columns: 1fr 1fr; }
+  .resa-field-full { grid-column: 1 / -1; }
+}
+.resa-field { display: flex; flex-direction: column; gap: 0.35rem; }
+.resa-field > span { font-size: 0.78rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(var(--ink-rgb), 0.7); }
+.resa-field em { font-style: normal; text-transform: none; letter-spacing: 0; opacity: 0.7; }
+.resa-field input,
+.resa-field textarea {
+  width: 100%;
+  padding: 0.55em 0.1em;
+  border: none;
+  border-bottom: 1.5px solid rgba(var(--ink-rgb), 0.22);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+.resa-field textarea {
+  resize: vertical;
+  padding: 0.7em 0.8em;
+  border: 1px solid rgba(var(--ink-rgb), 0.18);
+  border-radius: 10px;
+  background: var(--cream);
+}
+.resa-field input::placeholder,
+.resa-field textarea::placeholder { color: rgba(var(--ink-rgb), 0.35); }
+.resa-field input:focus,
+.resa-field textarea:focus { outline: none; border-color: var(--olive); }
+.resa-field input.is-invalid { border-color: var(--terracotta); }
+
+/* CTA — le grand bouton vert Otto, avec récapitulatif vivant */
+.resa-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  width: 100%;
+  margin-top: var(--space-xs);
+  padding: 1.05rem 1.5rem;
+  border: none;
+  border-radius: 999px;
+  /* Même vert que la pastille du logo et les badges du hero */
+  background: linear-gradient(180deg, #B0C292 0%, var(--logo-green) 100%);
+  color: #ffffff;
+  font: inherit;
+  cursor: pointer;
+  box-shadow: 0 16px 30px -14px rgba(var(--ink-rgb), 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+}
+.resa-cta:hover { transform: translateY(-2px); box-shadow: 0 20px 34px -14px rgba(var(--ink-rgb), 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.25); }
+.resa-cta:active { transform: translateY(0); }
+.resa-cta-label {
+  font-family: 'Dosis', var(--font-body);
+  font-weight: 800;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-shadow: -0.07em 0.07em 0 rgba(20, 24, 12, 0.9);
+}
+.resa-cta-summary { font-size: 0.85rem; font-weight: 600; text-shadow: -1px 1px 0 rgba(20, 24, 12, 0.7); }
+.resa-cta-summary::first-letter { text-transform: uppercase; }
+.resa-fineprint { margin: var(--space-sm) 0 0; text-align: center; font-size: 0.8rem; color: rgba(var(--ink-rgb), 0.55); }
+
+/* -- Colonne droite -- */
+.resa-aside { display: grid; gap: var(--space-md); }
+
+.resa-photo {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 5 / 4;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-photo);
+}
+.resa-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 45% 60%; transition: transform 1.2s var(--ease-out); }
+.resa-photo:hover img { transform: scale(1.03); }
+.resa-photo figcaption {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 3rem var(--space-md) var(--space-md);
+  background: linear-gradient(180deg, transparent, rgba(var(--ink-rgb), 0.82));
+  color: var(--cream);
+}
+.resa-photo-kicker { font-size: 0.72rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.8; }
+.resa-photo-quote { font-family: var(--font-quote); font-style: italic; font-size: 1.3rem; line-height: 1.3; }
+
+.resa-info {
+  padding: clamp(1.25rem, 3vw, 1.85rem);
+  background: var(--cream-carte);
+  border: 1px solid rgba(var(--ink-rgb), 0.1);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+.resa-info-title { margin: 0 0 var(--space-sm); font-size: 1.35rem; }
+.resa-info-list { margin: 0; }
+.resa-info-list > div {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr;
+  gap: var(--space-sm);
+  padding-block: 0.8rem;
+  border-top: 1px solid rgba(var(--ink-rgb), 0.1);
+}
+.resa-info-list dt { font-size: 0.75rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--terracotta); padding-top: 0.2em; }
+.resa-info-list dd { margin: 0; }
+.resa-info-list a { text-decoration-color: rgba(var(--ink-rgb), 0.3); text-underline-offset: 3px; }
+.resa-info-list a:hover { text-decoration-color: var(--terracotta); }
+.resa-phone { font-family: var(--font-display); font-size: 1.2rem; font-weight: 600; letter-spacing: 0.02em; }
+.resa-hours { display: flex; justify-content: space-between; gap: 1rem; font-variant-numeric: tabular-nums; }
+.resa-hours span:first-child { color: rgba(var(--ink-rgb), 0.7); }
+.resa-hours-note { display: block; margin-top: 0.35rem; font-size: 0.8rem; color: rgba(var(--ink-rgb), 0.55); }
+
+.resa-group {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: flex-start;
+  margin-top: var(--space-sm);
+  padding: var(--space-sm) var(--space-md) var(--space-sm) var(--space-sm);
+  border-radius: 12px;
+  background: rgba(var(--sage-rgb), 0.55);
+  border: 1px solid rgba(var(--olive-rgb), 0.2);
+}
+.resa-group p { margin: 0 0 0.4rem; font-size: 0.92rem; line-height: 1.5; }
+.resa-group-badge {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: url("../img/otto-badge-clean.png") center / cover no-repeat;
+  color: #fff;
+  font-family: 'Dosis', var(--font-body);
+  font-weight: 800;
+  font-size: 1.05rem;
+  text-shadow: -0.07em 0.07em 0 rgba(20, 24, 12, 0.9);
+  box-shadow: 0 8px 16px -8px rgba(var(--ink-rgb), 0.5);
+}
+.resa-group-link { font-size: 0.88rem; font-weight: 500; color: var(--olive); text-decoration: none; }
+.resa-group-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Passerelle réservation <-> emporter : les deux parcours restent séparés,
+   mais chacun renvoie discrètement vers l'autre. */
+.resa-crosslink {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: 12px;
+  border: 1px dashed rgba(var(--terracotta-rgb), 0.45);
+  background: rgba(var(--terracotta-rgb), 0.05);
+  color: var(--ink);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  text-decoration: none;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.resa-crosslink:hover { background: rgba(var(--terracotta-rgb), 0.1); border-color: var(--terracotta); }
+.resa-crosslink-cta { font-size: 0.88rem; font-weight: 500; color: var(--terracotta); }
+
+.resa-policy {
+  display: flex;
+  gap: 0.55rem;
+  align-items: flex-start;
+  margin: var(--space-sm) 0 0;
+  font-size: 0.85rem;
+  color: rgba(var(--ink-rgb), 0.7);
+}
+.resa-policy svg { flex: none; margin-top: 0.1em; color: var(--terracotta); }
+
+/* -- Confirmation -- */
+.resa-toast {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: var(--gutter);
+  background: rgba(var(--ink-rgb), 0);
+  transition: background 0.35s ease;
+}
+.resa-toast[hidden] { display: none; }
+.resa-toast.is-open { background: rgba(var(--ink-rgb), 0.45); }
+.resa-toast-card {
+  position: relative;
+  width: min(440px, 100%);
+  padding: 3rem var(--space-lg) var(--space-lg);
+  text-align: center;
+  background: var(--cream-carte);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 30px 60px -20px rgba(var(--ink-rgb), 0.55);
+  opacity: 0;
+  transform: translateY(18px) scale(0.97);
+  transition: opacity 0.4s var(--ease-out), transform 0.4s var(--ease-out);
+}
+.resa-toast.is-open .resa-toast-card { opacity: 1; transform: none; }
+.resa-toast-seal {
+  position: absolute;
+  top: -34px; left: 50%;
+  display: grid;
+  place-items: center;
+  width: 68px; height: 68px;
+  margin-left: -34px;
+  border-radius: 50%;
+  background: url("../img/otto-badge-clean.png") center / cover no-repeat;
+  color: #fff;
+  font-size: 1.8rem;
+  font-weight: 700;
+  box-shadow: 0 12px 24px -10px rgba(var(--ink-rgb), 0.6);
+}
+.resa-toast-card .eyebrow { margin: 0 0 var(--space-2xs); }
+.resa-toast-title { margin: 0 0 var(--space-xs); font-size: 1.6rem; }
+.resa-toast-body { margin: 0 0 var(--space-md); color: rgba(var(--ink-rgb), 0.78); }
+.resa-toast-body::first-letter { text-transform: uppercase; }
+.resa-toast-close { border: none; cursor: pointer; background: var(--olive); font: inherit; font-weight: 500; }
+
+@media (prefers-reduced-motion: reduce) {
+  .resa-photo img,
+  .resa-toast-card { transition: none; }
+}
+
+/* ---------- Photos gallery (photos.html, en/photos.html) ---------- */
+/* Every source photo is 1400×840 (5:3). The masonry rhythm comes from the grid,
+   not the files: "is-wide" spans two columns, "is-tall" two rows, and
+   object-fit crops each tile to whatever shape its cell ends up. Dense
+   auto-flow back-fills the gaps so filtering never leaves holes. */
+
+.gallery-intro {
+  max-width: 60ch;
+  font-size: 1.05rem;
+  color: rgba(var(--ink-rgb), 0.8);
+}
+
+.gallery-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+  margin-block: var(--space-lg) var(--space-md);
+}
+.gallery-filter {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.55em 1.1em;
+  border: 1px solid rgba(var(--ink-rgb), 0.25);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.2s var(--ease-out), color 0.2s var(--ease-out), border-color 0.2s var(--ease-out);
+}
+.gallery-filter span { opacity: 0.55; font-size: 0.8em; margin-left: 0.2em; }
+.gallery-filter:hover { border-color: var(--olive); color: var(--olive); }
+.gallery-filter[aria-pressed="true"] { background: var(--olive); border-color: var(--olive); color: var(--cream); }
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-auto-rows: clamp(140px, 30vw, 200px);
+  grid-auto-flow: dense;
+  gap: var(--space-2xs);
+}
+@media (min-width: 700px) {
+  .gallery-grid { grid-template-columns: repeat(3, 1fr); grid-auto-rows: 210px; gap: var(--space-xs); }
+}
+@media (min-width: 1100px) {
+  .gallery-grid { grid-template-columns: repeat(4, 1fr); grid-auto-rows: 200px; }
+}
+
+.gallery-item { margin: 0; overflow: hidden; border-radius: var(--radius); background: var(--sage); }
+.gallery-item.is-wide { grid-column: span 2; }
+.gallery-item.is-tall { grid-row: span 2; }
+.gallery-item[hidden] { display: none; }
+.gallery-item a { display: block; height: 100%; }
+.gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s var(--ease-out), filter 0.3s var(--ease-out);
+}
+.gallery-item a:hover img,
+.gallery-item a:focus-visible img { transform: scale(1.04); filter: saturate(1.08); }
+.gallery-item.is-entering { animation: gallery-in 0.45s var(--ease-out) both; }
+@keyframes gallery-in { from { opacity: 0; transform: translateY(8px); } }
+
+/* Lightbox */
+.lightbox {
+  width: 100vw;
+  height: 100vh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: rgba(var(--ink-rgb), 0.94);
+  color: var(--cream);
+}
+.lightbox[open] { display: flex; align-items: center; justify-content: center; }
+.lightbox::backdrop { background: transparent; }
+.lightbox figure { margin: 0; max-width: min(92vw, 1400px); text-align: center; }
+.lightbox img {
+  max-width: 100%;
+  max-height: 82vh;
+  margin-inline: auto;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-photo);
+}
+.lightbox figcaption {
+  margin-top: var(--space-xs);
+  font-family: var(--font-quote);
+  font-style: italic;
+  font-size: 1.2rem;
+}
+.lightbox button {
+  position: absolute;
+  background: none;
+  border: 0;
+  color: var(--cream);
+  font-size: 2.75rem;
+  line-height: 1;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  opacity: 0.8;
+}
+.lightbox button:hover { opacity: 1; color: var(--logo-green); }
+.lightbox-close { top: 0.5rem; right: 0.75rem; }
+.lightbox-prev { left: 0.25rem; top: 50%; transform: translateY(-50%); }
+.lightbox-next { right: 0.25rem; top: 50%; transform: translateY(-50%); }
+@media (max-width: 699px) {
+  .lightbox-prev, .lightbox-next { top: auto; bottom: 1rem; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gallery-item img, .gallery-item.is-entering { transition: none; animation: none; }
+}
+
+/* ---------- Home: photos teaser (index.html) ---------- */
+/* Five picks from assets/img/photos/ — one hero tile + four — each linking to
+   photos.html, where the full filterable gallery lives. */
+
+.photos-teaser { background: var(--cream-carte); }
+.photos-teaser-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+.photos-teaser-head p:last-child { max-width: 52ch; margin: 0; color: rgba(var(--ink-rgb), 0.8); }
+
+.photos-teaser-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-auto-rows: clamp(130px, 28vw, 180px);
+  gap: var(--space-2xs);
+}
+.photos-teaser-item:first-child { grid-column: span 2; }
+@media (min-width: 800px) {
+  .photos-teaser-grid { grid-template-columns: repeat(4, 1fr); grid-auto-rows: 220px; gap: var(--space-xs); }
+  .photos-teaser-item:first-child { grid-row: span 2; }
+}
+
+.photos-teaser-item {
+  display: block;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--sage);
+  box-shadow: var(--shadow-card);
+}
+.photos-teaser-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s var(--ease-out), filter 0.3s var(--ease-out);
+}
+.photos-teaser-item:hover img,
+.photos-teaser-item:focus-visible img { transform: scale(1.05); filter: saturate(1.08); }
+@media (prefers-reduced-motion: reduce) {
+  .photos-teaser-item img { transition: none; }
+}
+
+/* ---------- Commande à emporter (commander.html) ---------- */
+/* Réutilise la fiche .resa-* ; seul le panier est propre à cette page. */
+.order-tabs {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin: 0 0 var(--space-md);
+}
+@media (max-width: 480px) {
+  .order-tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 0.2rem; }
+  .order-tabs::-webkit-scrollbar { display: none; }
+}
+.order-tab {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.95rem;
+  border: 1px solid rgba(var(--ink-rgb), 0.16);
+  border-radius: 999px;
+  background: var(--cream);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.order-tab:hover { border-color: var(--olive); }
+.order-tab[aria-selected="true"] { background: var(--olive); border-color: var(--olive); color: var(--cream); }
+.order-tab:focus-visible { outline: 2px solid var(--terracotta); outline-offset: 2px; }
+.order-tab-count {
+  min-width: 1.35em;
+  padding: 0 0.3em;
+  border-radius: 999px;
+  background: var(--terracotta);
+  color: var(--cream);
+  font-size: 0.72rem;
+  line-height: 1.35em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.order-cat-meta { font-family: var(--font-body); font-style: normal; font-size: 0.78rem; color: rgba(var(--ink-rgb), 0.5); }
+.order-list { list-style: none; margin: 0 0 var(--space-md); padding: 0; }
+.order-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.4rem var(--space-sm);
+  padding: 0.7rem 0.6rem;
+  border-bottom: 1px dashed rgba(var(--ink-rgb), 0.14);
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+.order-item.is-picked { background: rgba(var(--sage-rgb), 0.45); }
+.order-item-body { display: flex; flex-direction: column; min-width: 0; }
+.order-item-name { font-family: var(--font-display); font-weight: 600; font-size: 1.02rem; }
+.order-item-desc { font-size: 0.82rem; color: rgba(var(--ink-rgb), 0.6); }
+.order-item-price { font-family: var(--font-display); font-weight: 600; font-variant-numeric: tabular-nums; }
+.order-qty {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 3px;
+  border: 1px solid rgba(var(--ink-rgb), 0.14);
+  border-radius: 999px;
+  background: var(--cream);
+}
+.order-qty-btn {
+  width: 30px; height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--olive);
+  font: inherit;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.order-qty-btn:hover:not(:disabled) { background: rgba(var(--olive-rgb), 0.12); }
+.order-qty-btn:disabled { opacity: 0.3; cursor: default; }
+.order-qty-btn:focus-visible { outline: 2px solid var(--terracotta); outline-offset: 1px; }
+.order-qty-val { min-width: 1.4em; text-align: center; font-weight: 500; font-variant-numeric: tabular-nums; }
+.order-item.is-picked .order-qty { border-color: var(--olive); }
+.order-note { margin: 0; font-size: 0.85rem; color: rgba(var(--ink-rgb), 0.65); }
+@media (max-width: 480px) {
+  .order-item { grid-template-columns: minmax(0, 1fr) auto; }
+  .order-item-price { grid-row: 1; grid-column: 2; }
+  .order-qty { grid-column: 1 / -1; justify-self: end; }
+}
+
+/* -- Parcours en trois étapes : panier → retrait → coordonnées -- */
+.order-flow { --order-progress: 0; }
+
+/* Fil d'étapes : trois pastilles reliées par un filet qui se remplit en olive. */
+.order-steps {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0 0 var(--space-lg);
+  padding: 0 0 var(--space-md);
+  list-style: none;
+  border-bottom: 1px solid rgba(var(--ink-rgb), 0.12);
+}
+.order-steps::before,
+.order-steps::after {
+  content: '';
+  position: absolute;
+  top: 16px;
+  left: calc(100% / 6);
+  width: calc(100% * 2 / 3);
+  height: 1.5px;
+  background: rgba(var(--ink-rgb), 0.14);
+}
+.order-steps::after {
+  background: var(--olive);
+  transform: scaleX(var(--order-progress));
+  transform-origin: left;
+  transition: transform 0.6s var(--ease-out);
+}
+.order-steps-item { position: relative; z-index: 1; display: flex; justify-content: center; }
+.order-steps-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  max-width: 100%;
+  padding: 0 0.25rem;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+.order-steps-dot {
+  display: grid;
+  place-items: center;
+  width: 33px; height: 33px;
+  border: 1.5px solid rgba(var(--ink-rgb), 0.2);
+  border-radius: 50%;
+  background: var(--cream-carte);
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgba(var(--ink-rgb), 0.5);
+  transition: background 0.35s var(--ease-out), border-color 0.35s var(--ease-out), color 0.35s var(--ease-out), transform 0.35s var(--ease-out);
+}
+.order-steps-label {
+  font-size: 0.78rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1.3;
+  color: rgba(var(--ink-rgb), 0.5);
+  transition: color 0.3s ease;
+}
+.order-steps-meta {
+  min-height: 1.2em;
+  font-family: var(--font-quote);
+  font-style: italic;
+  font-size: 0.92rem;
+  line-height: 1.2;
+  color: rgba(var(--ink-rgb), 0.6);
+}
+.order-steps-item[data-state="current"] .order-steps-dot {
+  border-color: var(--olive);
+  background: var(--olive);
+  color: var(--cream);
+  transform: scale(1.08);
+  box-shadow: 0 0 0 5px rgba(var(--olive-rgb), 0.12);
+}
+.order-steps-item[data-state="current"] .order-steps-label { color: var(--ink); }
+.order-steps-item[data-state="done"] .order-steps-dot {
+  border-color: var(--olive);
+  color: var(--olive);
+  font-size: 0;
+}
+.order-steps-item[data-state="done"] .order-steps-dot::before { content: '✓'; font-size: 0.95rem; }
+.order-steps-item[data-state="done"] .order-steps-label { color: var(--olive); }
+.order-steps-btn:hover .order-steps-label { color: var(--ink); }
+.order-steps-btn:focus-visible { outline: 2px solid var(--terracotta); outline-offset: 4px; border-radius: 8px; }
+@media (max-width: 480px) {
+  .order-steps-label { font-size: 0.68rem; letter-spacing: 0.04em; }
+  .order-steps-meta { display: none; }
+}
+
+/* Panneaux : un seul visible, entrée en glissé-fondu dans le sens du parcours. */
+.order-panel { padding: 0; }
+.order-panel[hidden] { display: none; }
+.order-panel.is-entering-fwd { --order-from: 28px; animation: order-panel-in 0.5s var(--ease-out) both; }
+.order-panel.is-entering-back { --order-from: -28px; animation: order-panel-in 0.5s var(--ease-out) both; }
+@keyframes order-panel-in {
+  from { opacity: 0; transform: translateX(var(--order-from)); }
+  to { opacity: 1; transform: none; }
+}
+.order-panel .resa-step-title:focus { outline: none; }
+.order-subtitle {
+  margin: var(--space-lg) 0 var(--space-sm);
+  font-size: 1.08rem;
+  font-weight: 600;
+}
+.order-panel .resa-step-head + .order-subtitle { margin-top: 0; }
+
+/* Barre du panier (étape 1) : collée en bas de l'écran tant qu'on parcourt la carte. */
+.order-bar {
+  position: sticky;
+  bottom: var(--space-sm);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+  padding: 0.55rem 0.55rem 0.55rem 1.25rem;
+  border: 1px solid rgba(var(--ink-rgb), 0.1);
+  border-radius: 999px;
+  background: rgba(255, 252, 245, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 18px 36px -18px rgba(var(--ink-rgb), 0.45);
+}
+.order-bar-total { display: flex; flex-direction: column; margin: 0; line-height: 1.2; }
+.order-bar-count { font-size: 0.8rem; color: rgba(var(--ink-rgb), 0.6); }
+.order-bar-total strong { font-family: var(--font-display); font-size: 1.35rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.order-bar:not(.is-filled) .order-bar-total strong { color: rgba(var(--ink-rgb), 0.35); }
+
+.order-next {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1.5rem;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #B0C292 0%, var(--logo-green) 100%);
+  color: #fff;
+  font-family: 'Dosis', var(--font-body);
+  font-size: 1.02rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-shadow: -0.07em 0.07em 0 rgba(20, 24, 12, 0.9);
+  cursor: pointer;
+  box-shadow: 0 12px 24px -12px rgba(var(--ink-rgb), 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+}
+.order-next span { transition: transform 0.25s var(--ease-out); }
+.order-next:hover { transform: translateY(-1px); box-shadow: 0 16px 28px -12px rgba(var(--ink-rgb), 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.25); }
+.order-next:hover span { transform: translateX(3px); }
+.order-next:active { transform: translateY(0); }
+.order-next:focus-visible,
+.order-back:focus-visible { outline: 2px solid var(--terracotta); outline-offset: 3px; }
+.order-bar:not(.is-filled) .order-next { filter: saturate(0.5); opacity: 0.75; }
+
+.order-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+  padding-top: var(--space-md);
+  border-top: 1px solid rgba(var(--ink-rgb), 0.12);
+}
+.order-panel .resa-fineprint + .order-nav { justify-content: center; margin-top: var(--space-md); }
+.order-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0;
+  border: 0;
+  background: none;
+  color: rgba(var(--ink-rgb), 0.7);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.order-back:hover { color: var(--terracotta); }
+.order-panel .resa-fields { margin-bottom: var(--space-md); }
+
+/* Panier latéral : le récapitulatif vivant, toujours sous les yeux. */
+.order-recap {
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+  background: var(--cream-carte);
+  border: 1px solid rgba(var(--ink-rgb), 0.1);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+.order-recap-empty { margin: 0; font-family: var(--font-quote); font-style: italic; font-size: 1.1rem; color: rgba(var(--ink-rgb), 0.6); }
+.order-recap-list { margin: 0; padding: 0; list-style: none; }
+.order-recap-list li {
+  display: grid;
+  grid-template-columns: 2.2rem minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px dashed rgba(var(--ink-rgb), 0.14);
+  font-size: 0.95rem;
+}
+.order-recap-qty { color: var(--terracotta); font-weight: 500; font-variant-numeric: tabular-nums; }
+.order-recap-name { font-family: var(--font-display); font-weight: 600; }
+.order-recap-price { font-variant-numeric: tabular-nums; }
+.order-recap-pickup { margin: var(--space-sm) 0 0; font-size: 0.9rem; font-weight: 500; color: var(--olive); }
+.order-recap-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: var(--space-sm) 0 0;
+  padding-top: var(--space-xs);
+  border-top: 1.5px solid rgba(var(--ink-rgb), 0.2);
+}
+.order-recap-total span { font-size: 0.78rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(var(--ink-rgb), 0.7); }
+.order-recap-total strong { font-family: var(--font-display); font-size: 1.6rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.order-recap-note { margin: 0.2rem 0 0; font-size: 0.8rem; color: rgba(var(--ink-rgb), 0.55); }
+/* Sous 960px, la barre collante et le fil d'étapes font office de récap. */
+@media (max-width: 959px) {
+  .order-recap { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .order-panel.is-entering-fwd,
+  .order-panel.is-entering-back { animation: none; }
+  .order-steps::after,
+  .order-steps-dot,
+  .order-next,
+  .order-next span { transition: none; }
+}
+
+/* ---------- Contact (contact.html, en/contact.html) ---------- */
+/* Reprend la structure de la page officielle (formulaire puis infos pratiques)
+   avec les composants de la réservation : fiche crème, champs soulignés,
+   CTA vert Otto. Les rubriques d'infos reprennent le filet court vert du site
+   d'origine, en olive. */
+
+.contact-head { text-align: center; margin-inline: auto; }
+.contact-rule {
+  display: block;
+  width: 44px;
+  height: 2px;
+  margin: 0 auto var(--space-sm);
+  background: var(--logo-green);
+}
+/* Formulaire seul, centré sous le titre : largeur de lecture confortable,
+   alignée sur l'en-tête (48rem) pour un ensemble symétrique. */
+.contact-wrap {
+  position: relative;
+  max-width: 44rem;
+  margin-inline: auto;
+}
+.contact-card { padding: clamp(1.5rem, 4vw, 3rem); }
+.contact .resa-field textarea { min-height: 9rem; }
+.resa-field textarea.is-invalid { border-color: var(--terracotta); }
+.contact-cta { margin-top: var(--space-lg); }
+.contact-legal {
+  max-width: 60ch;
+  margin: var(--space-sm) auto 0;
+  text-align: center;
+  font-size: 0.75rem;
+  line-height: 1.55;
+  color: rgba(var(--ink-rgb), 0.5);
+}
+
+/* -- Infos pratiques -- */
+.infos {
+  background: var(--cream-carte);
+  border-top: 1px solid rgba(var(--ink-rgb), 0.08);
+}
+.infos-head { margin-bottom: clamp(2rem, 4vw, 3rem); }
+.infos-head .eyebrow { margin: 0 0 var(--space-xs); letter-spacing: 0.14em; }
+.infos-head h2 { margin: 0; }
+
+.infos-grid {
+  display: grid;
+  gap: clamp(2rem, 4vw, 3.5rem);
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+}
+@media (min-width: 960px) {
+  .infos-grid { grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr); }
+  .infos-map { position: sticky; top: calc(72px + var(--space-md)); }
+}
+
+.infos-list {
+  display: grid;
+  gap: var(--space-lg) clamp(1.5rem, 3vw, 2.5rem);
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 640px) {
+  .infos-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.infos-item p { margin: 0; }
+.infos-label {
+  margin: 0 0 var(--space-sm);
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgba(var(--ink-rgb), 0.6);
+}
+.infos-label::after {
+  content: "";
+  display: block;
+  width: 28px;
+  height: 2px;
+  margin-top: 0.55rem;
+  background: var(--logo-green);
+}
+
+.infos-chips { display: flex; flex-wrap: wrap; gap: 0.45rem; margin: 0; padding: 0; list-style: none; }
+.infos-chips li {
+  padding: 0.3em 0.8em;
+  border: 1px solid rgba(var(--olive-rgb), 0.25);
+  border-radius: 999px;
+  background: rgba(var(--sage-rgb), 0.45);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.infos-access { margin: 0; }
+.infos-access > div {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: var(--space-xs);
+  padding-block: 0.45rem;
+  border-top: 1px dashed rgba(var(--ink-rgb), 0.14);
+}
+.infos-access > div:first-child { border-top: 0; padding-top: 0; }
+.infos-access dt { font-weight: 500; font-size: 0.9rem; }
+.infos-access dd { margin: 0; font-size: 0.92rem; color: rgba(var(--ink-rgb), 0.8); }
+
+.infos-address { font-style: normal; line-height: 1.8; }
+.infos-address .resa-phone { text-decoration: none; }
+.infos-address .resa-phone:hover { color: var(--olive); }
+.infos-address span { font-size: 0.9rem; color: rgba(var(--ink-rgb), 0.7); }
+
+.infos-map {
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(var(--ink-rgb), 0.1);
+  border-radius: var(--radius-lg);
+  background: var(--sage);
+  box-shadow: var(--shadow-card);
+}
+.infos-map iframe {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  border: 0;
+  filter: sepia(0.18) saturate(0.85);               /* réchauffe le fond Google vers la palette crème */
+  transition: filter 0.4s ease;
+}
+.infos-map:hover iframe { filter: none; }
+@media (max-width: 959px) {
+  .infos-map iframe { aspect-ratio: 4 / 3; }
+}
+.infos-map figcaption {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--cream-carte);
+  font-size: 0.88rem;
+}
+.infos-map figcaption strong { font-family: var(--font-display); font-weight: 600; }
+.infos-map figcaption a { font-weight: 500; color: var(--olive); text-decoration: none; white-space: nowrap; }
+.infos-map figcaption a:hover { text-decoration: underline; text-underline-offset: 3px; }

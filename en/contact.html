@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Access &amp; Contact — Otto, Paris 13th</title>
+<meta name="description" content="Contact Otto, Italian pizzeria at 53 bis Bd Arago, 75013 Paris: contact form, practical info, metro access and map.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Cormorant+Garamond:ital@1&family=Inter:wght@400;500&family=Dosis:wght@800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="index.html" class="nav-logo" aria-label="Otto — home">
+      <img class="nav-logo-img" src="../assets/img/otto-logo.png" alt="Otto Pizza" width="44" height="44">
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="la-carte.html">Menu</a></li>
+      <li><a href="reservation.html">Book a table</a></li>
+      <li><a href="commander.html">Order takeout</a></li>
+      <li><a href="photos.html">Photos</a></li>
+      <li><a href="contact.html" aria-current="page">Access &amp; Contact</a></li>
+      <li><a href="about.html">About</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="lang-toggle">
+        <a href="../contact.html">FR</a>
+        <a href="contact.html" aria-current="true">EN</a>
+      </div>
+      <button class="nav-toggle" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+  <div class="nav-mobile-panel">
+    <a href="index.html">Home</a>
+    <a href="la-carte.html">Menu</a>
+    <a href="reservation.html">Book a table</a>
+    <a href="commander.html">Order takeout</a>
+    <a href="photos.html">Photos</a>
+    <a href="contact.html">Access &amp; Contact</a>
+    <a href="about.html">About</a>
+  </div>
+</nav>
+
+<main>
+  <!-- 1. Contact us -->
+  <section class="resa contact">
+    <img class="resa-olivier motif" src="../assets/img/motif-olivier.svg" alt="" aria-hidden="true" width="260" height="230">
+    <div class="container">
+      <header class="resa-head contact-head">
+        <p class="eyebrow">Contatti · 53 bis Bd Arago</p>
+        <h1>Contact us</h1>
+        <span class="contact-rule" aria-hidden="true"></span>
+        <p class="quote resa-lede">Would you like to get in touch? Just fill in the form below!</p>
+      </header>
+
+      <div class="contact-wrap">
+        <!-- Front-end only for now — to be wired to a sending service
+             (Formspree, Brevo, back office…) once chosen. -->
+        <form class="resa-card contact-card" id="contact-form" novalidate>
+          <div class="resa-fields">
+            <label class="resa-field">
+              <span>First name *</span>
+              <input type="text" name="firstname" autocomplete="given-name" required placeholder="Giulia">
+            </label>
+            <label class="resa-field">
+              <span>Last name *</span>
+              <input type="text" name="lastname" autocomplete="family-name" required placeholder="Rossi">
+            </label>
+            <label class="resa-field">
+              <span>Your email address *</span>
+              <input type="email" name="email" autocomplete="email" required placeholder="giulia@example.com">
+            </label>
+            <label class="resa-field">
+              <span>Phone *</span>
+              <input type="tel" name="phone" autocomplete="tel" required placeholder="+33 6 12 34 56 78" pattern="[0-9+ .\(\)\-]{8,}">
+            </label>
+            <label class="resa-field resa-field-full">
+              <span>Message *</span>
+              <textarea name="message" rows="6" required placeholder="Private hire, events, a question about the menu…"></textarea>
+            </label>
+          </div>
+
+          <button type="submit" class="resa-cta contact-cta">
+            <span class="resa-cta-label">Send</span>
+          </button>
+          <p class="contact-legal">
+            Fields marked with * are required. Your data is used by Otto solely to answer your request and is never shared with third parties.
+            Under the GDPR, you have the right to access, correct and delete your data, which you can exercise through this same form.
+          </p>
+        </form>
+      </div>
+    </div>
+
+    <div class="resa-toast" id="contact-toast" hidden>
+      <div class="resa-toast-card" role="dialog" aria-modal="true" aria-labelledby="contact-toast-title">
+        <span class="resa-toast-seal" aria-hidden="true">✓</span>
+        <p class="eyebrow">Grazie mille !</p>
+        <h2 class="resa-toast-title" id="contact-toast-title">Message sent.</h2>
+        <p class="resa-toast-body" id="contact-toast-body"></p>
+        <button type="button" class="btn resa-toast-close" id="contact-toast-close">Perfect, see you soon</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Practical info -->
+  <section class="infos" aria-labelledby="infos-title">
+    <div class="container">
+      <header class="infos-head">
+        <p class="eyebrow">Otto Pizza in Paris</p>
+        <h2 id="infos-title">Practical info</h2>
+      </header>
+
+      <div class="infos-grid">
+        <div class="infos-list">
+          <div class="infos-item">
+            <h3 class="infos-label">Cuisine</h3>
+            <p>Italian</p>
+          </div>
+          <div class="infos-item">
+            <h3 class="infos-label">Type of restaurant</h3>
+            <p>Pizzeria, Trattoria, Bar, Restaurant, Italian</p>
+          </div>
+          <div class="infos-item">
+            <h3 class="infos-label">Services</h3>
+            <ul class="infos-chips">
+              <li>Air conditioning</li>
+              <li>Private hire</li>
+              <li>Wheelchair accessible</li>
+              <li>Terrace</li>
+            </ul>
+          </div>
+          <div class="infos-item">
+            <h3 class="infos-label">Payment methods</h3>
+            <ul class="infos-chips">
+              <li>Apple Pay</li>
+              <li>Contactless</li>
+              <li>Mastercard / Visa</li>
+              <li>Meal vouchers</li>
+              <li>Cash</li>
+              <li>Carte Bleue</li>
+            </ul>
+          </div>
+          <div class="infos-item">
+            <h3 class="infos-label">Getting here</h3>
+            <dl class="infos-access">
+              <div><dt>Metro</dt><dd>Les Gobelins (7) · Glacière (6) · Corvisart (6)</dd></div>
+              <div><dt>Bikes</dt><dd>Boulevard Arago station</dd></div>
+              <div><dt>Parking</dt><dd>Car park nearby</dd></div>
+            </dl>
+          </div>
+          <div class="infos-item">
+            <h3 class="infos-label">Address &amp; contact</h3>
+            <address class="infos-address">
+              53 bis Bd Arago, 75013 Paris<br>
+              <a class="resa-phone" href="tel:+33987140850">09 87 14 08 50</a><br>
+              <span>Mon–Sun: 12:00–14:15 &amp; 18:30–22:15</span>
+            </address>
+          </div>
+        </div>
+
+        <figure class="infos-map">
+          <iframe
+            title="Map — Otto, 53 bis Bd Arago, 75013 Paris"
+            src="https://maps.google.com/maps?q=Otto%20Pizza%2C%2053%20bis%20Boulevard%20Arago%2C%2075013%20Paris&amp;z=16&amp;hl=en&amp;output=embed"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            allowfullscreen></iframe>
+          <figcaption>
+            <span><strong>Otto</strong> · 53 bis Bd Arago, 75013 Paris</span>
+            <a href="https://www.google.com/maps/dir/?api=1&amp;destination=53%20bis%20Boulevard%20Arago%2C%2075013%20Paris" target="_blank" rel="noopener">Directions →</a>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <p><strong>Otto</strong></p>
+        <p>53 bis Bd Arago, 75013 Paris</p>
+        <p><a href="tel:+33987140850">09 87 14 08 50</a></p>
+      </div>
+      <div>
+        <p><a href="index.html">Home</a></p>
+        <p><a href="la-carte.html">Menu</a></p>
+        <p><a href="photos.html">Photos</a></p>
+        <p><a href="reservation.html">Book</a></p>
+        <p><a href="commander.html">Takeout</a></p>
+        <p><a href="contact.html">Access &amp; Contact</a></p>
+        <p><a href="about.html">About</a></p>
+      </div>
+      <div>
+        <p><a href="https://www.instagram.com/ottopizza75013/" target="_blank" rel="noopener">Instagram</a></p>
+        <p><a href="https://www.facebook.com/otto.paris13/" target="_blank" rel="noopener">Facebook</a></p>
+        <div class="lang-toggle" style="margin-top:1rem;">
+          <a href="../contact.html">FR</a>
+          <a href="contact.html" aria-current="true">EN</a>
+        </div>
+      </div>
+    </div>
+    <p class="footer-copyright">© Otto — Paris</p>
+  </div>
+</footer>
+
+<script src="../assets/js/main.js"></script>
+<script src="../assets/js/contact.js"></script>
+</body>
+</html>

@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Commander à emporter — Otto, Paris 13e</title>
+<meta name="description" content="Commandez vos pizzas à emporter chez Otto, 53 bis Bd Arago, Paris 13e — retrait au comptoir.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;900&family=Cormorant+Garamond:ital@1&family=Inter:wght@400;500&family=Dosis:wght@800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="index.html" class="nav-logo" aria-label="Otto — accueil">
+      <img class="nav-logo-img" src="assets/img/otto-logo.png" alt="Otto Pizza" width="44" height="44">
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="la-carte.html">La Carte</a></li>
+      <li><a href="reservation.html">Réserver une table</a></li>
+      <li><a href="commander.html" aria-current="page">Commander à emporter</a></li>
+      <li><a href="photos.html">Photos</a></li>
+      <li><a href="contact.html">Accès &amp; Contact</a></li>
+      <li><a href="about.html">À propos</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="lang-toggle">
+        <a href="index.html" aria-current="true">FR</a>
+        <a href="en/commander.html">EN</a>
+      </div>
+      <button class="nav-toggle" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+  <div class="nav-mobile-panel">
+    <a href="index.html">Accueil</a>
+    <a href="la-carte.html">La Carte</a>
+    <a href="reservation.html">Réserver une table</a>
+    <a href="commander.html">Commander à emporter</a>
+    <a href="photos.html">Photos</a>
+    <a href="contact.html">Accès &amp; Contact</a>
+    <a href="about.html">À propos</a>
+  </div>
+</nav>
+
+<main class="resa">
+  <img class="resa-olivier motif" src="assets/img/motif-olivier.svg" alt="" aria-hidden="true" width="260" height="230">
+  <div class="container">
+    <header class="resa-head">
+      <p class="eyebrow">Da portare via · 53 bis Bd Arago</p>
+      <h1>Commander <span class="nowrap">à&nbsp;emporter</span></h1>
+      <p class="quote resa-lede">Sortie du four, dans sa boîte, prête quand vous passez.</p>
+    </header>
+
+    <!-- Client qui revient : ses commandes en cours et celles de la semaine.
+         Rempli par commander.js via OttoStore (API SQLite ou localStorage). -->
+    <section class="order-history" id="order-history" aria-labelledby="order-history-title" hidden>
+      <div class="order-history-head">
+        <h2 class="order-history-title" id="order-history-title">Vos commandes</h2>
+        <p class="order-history-sub" id="order-history-sub"></p>
+      </div>
+      <ul class="order-history-notices" id="order-notices" role="status" hidden></ul>
+      <ul class="order-history-list" id="order-active"></ul>
+      <details class="order-history-past" id="order-past-wrap" hidden>
+        <summary>Cette semaine <span class="order-history-count" id="order-past-count"></span></summary>
+        <ul class="order-history-list" id="order-past"></ul>
+      </details>
+    </section>
+
+    <div class="resa-grid">
+      <!-- Colonne gauche : la commande à emporter.
+           Enregistrée par assets/js/order-store.js : API /api/orders quand le site
+           est servi par server/server.js, sinon localStorage sur l'appareil. -->
+      <form class="resa-card order-flow" id="order-form" novalidate>
+        <ol class="order-steps" aria-label="Étapes de la commande">
+          <li class="order-steps-item" data-state="current">
+            <button type="button" class="order-steps-btn" data-goto="1" aria-current="step">
+              <span class="order-steps-dot" aria-hidden="true">1</span>
+              <span class="order-steps-label">Votre commande</span>
+              <span class="order-steps-meta" data-meta="1"></span>
+            </button>
+          </li>
+          <li class="order-steps-item" data-state="todo">
+            <button type="button" class="order-steps-btn" data-goto="2">
+              <span class="order-steps-dot" aria-hidden="true">2</span>
+              <span class="order-steps-label">Retrait</span>
+              <span class="order-steps-meta" data-meta="2"></span>
+            </button>
+          </li>
+          <li class="order-steps-item" data-state="todo">
+            <button type="button" class="order-steps-btn" data-goto="3">
+              <span class="order-steps-dot" aria-hidden="true">3</span>
+              <span class="order-steps-label">Vos coordonnées</span>
+              <span class="order-steps-meta" data-meta="3"></span>
+            </button>
+          </li>
+        </ol>
+
+        <!-- Étape 1 — le panier -->
+        <section class="order-panel" data-step="1" aria-labelledby="order-step-1">
+          <div class="resa-step-head">
+            <span class="resa-step-num">01</span>
+            <h2 class="resa-step-title" id="order-step-1" tabindex="-1">Votre commande</h2>
+          </div>
+          <div class="order-tabs" role="tablist" aria-label="Catégories de la carte">
+            <button type="button" class="order-tab" role="tab" id="order-tab-pizze" aria-controls="order-cat-pizze" aria-selected="true">Pizze<span class="order-tab-count" data-count-for="pizze" hidden></span></button>
+            <button type="button" class="order-tab" role="tab" id="order-tab-entrees" aria-controls="order-cat-entrees" aria-selected="false" tabindex="-1">Entrées &amp; salades<span class="order-tab-count" data-count-for="entrees" hidden></span></button>
+            <button type="button" class="order-tab" role="tab" id="order-tab-pasta" aria-controls="order-cat-pasta" aria-selected="false" tabindex="-1">Pasta<span class="order-tab-count" data-count-for="pasta" hidden></span></button>
+            <button type="button" class="order-tab" role="tab" id="order-tab-dolci" aria-controls="order-cat-dolci" aria-selected="false" tabindex="-1">Dolci<span class="order-tab-count" data-count-for="dolci" hidden></span></button>
+            <button type="button" class="order-tab" role="tab" id="order-tab-boissons" aria-controls="order-cat-boissons" aria-selected="false" tabindex="-1">Boissons<span class="order-tab-count" data-count-for="boissons" hidden></span></button>
+          </div>
+          <div class="order-cat" role="tabpanel" id="order-cat-pizze" data-cat="pizze" aria-labelledby="order-tab-pizze">
+            <p class="resa-slot-label">Pizze <span class="order-cat-meta">· 10 choix</span></p>
+            <ul class="order-list">
+              <li class="order-item" data-name="Marinara" data-price="9">
+                <span class="order-item-body"><span class="order-item-name">Marinara</span><span class="order-item-desc">Sauce tomate San Marzano, ail légèrement confit, origan, huile d'olive extra vierge</span></span>
+                <span class="order-item-price">9€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Marinara" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Marinara">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="Margherita" data-price="12">
+                <span class="order-item-body"><span class="order-item-name">Margherita</span><span class="order-item-desc">Sauce tomate San Marzano, mozzarella fior di latte, basilic frais, huile d'olive extra vierge</span></span>
+                <span class="order-item-price">12€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Margherita" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Margherita">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="Regina" data-price="16">
+                <span class="order-item-body"><span class="order-item-name">Regina</span><span class="order-item-desc">Sauce tomate San Marzano, mozzarella fior di latte, jambon blanc supérieur, champignons de Paris frais, origan, huile d'olive extra vierge</span></span>
+                <span class="order-item-price">16€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Regina" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Regina">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="Capricciosa" data-price="18">
+                <span class="order-item-body"><span class="order-item-name">Capricciosa</span><span class="order-item-desc">Sauce tomate San Marzano, mozzarella fior di latte, jambon blanc supérieur, champignons, artichauts, olives, œuf, origan, huile d'olive extra vierge</span></span>
+                <span class="order-item-price">18€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Capricciosa" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Capricciosa">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="4 Fromages Rossa" data-price="16">
+                <span class="order-item-body"><span class="order-item-name">4 Fromages Rossa</span><span class="order-item-desc">Sauce tomate San Marzano, mozzarella fior di latte, gorgonzola, provola fumée, parmesan, basilic frais, origan, huile d'olive extra vierge</span></span>
+                <span class="order-item-price">16€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : 4 Fromages Rossa" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : 4 Fromages Rossa">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="Super Diavola" data-price="17">
+                <span class="order-item-body"><span class="order-item-name">Super Diavola</span><span class="order-item-desc">Sauce tomate San Marzano, mozzarella fior di latte, spianata piccante, provola fumée, ’nduja, sauce bomba maison, origan, huile d'olive extra vierge</span></span>
+                <span class="order-item-price">17€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Super Diavola" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Super Diavola">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="Regina Deluxe" data-price="18">
+                <span class="order-item-body"><span class="order-item-name">Regina Deluxe</span><span class="order-item-desc">Crème de truffe, mozzarella fior di latte, jambon blanc supérieur, champignons de Paris, origan, huile d'olive extra vierge, copeaux de truffe en sortie</span></span>
+                <span class="order-item-price">18€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Regina Deluxe" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Regina Deluxe">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="Bella" data-price="17">
+                <span class="order-item-body"><span class="order-item-name">Bella</span><span class="order-item-desc">Base Marinara, mozzarella di bufala, jambon de Parme, roquette, huile d'olive extra vierge</span></span>
+                <span class="order-item-price">17€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Bella" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Bella">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="Calabrese" data-price="16">
+                <span class="order-item-body"><span class="order-item-name">Calabrese</span><span class="order-item-desc">Sauce tomate San Marzano, mozzarella fior di latte, ’nduja, oignons rouges, olives, lamelles de poivrons rouges rôtis, origan, huile d'olive extra vierge</span></span>
+                <span class="order-item-price">16€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Calabrese" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Calabrese">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="New York Pepperoni" data-price="16">
+                <span class="order-item-body"><span class="order-item-name">New York Pepperoni</span><span class="order-item-desc">Sauce tomate San Marzano, mozzarella fior di latte, pepperoni, origan, huile d'olive extra vierge</span></span>
+                <span class="order-item-price">16€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : New York Pepperoni" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : New York Pepperoni">+</button>
+                </span>
+              </li>
+            </ul>
+          </div>
+          <div class="order-cat" role="tabpanel" id="order-cat-entrees" data-cat="entrees" aria-labelledby="order-tab-entrees" hidden>
+            <p class="resa-slot-label">Entrées &amp; salades <span class="order-cat-meta">· 7 choix</span></p>
+            <ul class="order-list">
+              <li class="order-item" data-name="Insalata delle Puglie" data-price="16">
+                <span class="order-item-body"><span class="order-item-name">Insalata delle Puglie</span><span class="order-item-desc">Salade feuille de chêne, roquette, poivrons marinés, aubergines grillées, artichauts, burrata, parmesan, tomates cerises, pickles d’oignons rouges, olives, pignons, basilic</span></span>
+                <span class="order-item-price">16€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Insalata delle Puglie" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Insalata delle Puglie">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="Insalata Mediterranea" data-price="16">
+                <span class="order-item-body"><span class="order-item-name">Insalata Mediterranea</span><span class="order-item-desc">Tomates, concombre, fêta, olives, oignons rouges, herbes fraîches, vinaigrette citron &amp; huile d’olive</span></span>
+                <span class="order-item-price">16€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Insalata Mediterranea" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Insalata Mediterranea">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="Assiette Italienne" data-price="17">
+                <span class="order-item-body"><span class="order-item-name">Assiette Italienne</span><span class="order-item-desc">Charcuterie et fromages italiens, burrata, salade feuille de chêne, légumes grillés</span></span>
+                <span class="order-item-price">17€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Assiette Italienne" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Assiette Italienne">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="Salade Verte" data-price="5">
+                <span class="order-item-body"><span class="order-item-name">Salade Verte</span><span class="order-item-desc">Salade feuille de chêne, vinaigrette basilic &amp; miel</span></span>
+                <span class="order-item-price">5€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Salade Verte" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Salade Verte">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="Duo de Burrata Otto" data-price="14">
+                <span class="order-item-body"><span class="order-item-name">Duo de Burrata Otto</span><span class="order-item-desc">Burratina crémeuse, burrata fumée, tomates rôties, roquette, huile d’olive, basilic &amp; pignons, focaccia tiède</span></span>
+                <span class="order-item-price">14€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Duo de Burrata Otto" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Duo de Burrata Otto">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="Carpaccio de Bresaola" data-price="13">
+                <span class="order-item-body"><span class="order-item-name">Carpaccio de Bresaola</span><span class="order-item-desc">Bresaola, roquette, copeaux de parmesan, citron, huile d’olive</span></span>
+                <span class="order-item-price">13€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Carpaccio de Bresaola" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Carpaccio de Bresaola">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="Focaccia Maison" data-price="6">
+                <span class="order-item-body"><span class="order-item-name">Focaccia Maison</span><span class="order-item-desc">Focaccia tiède, huile d’olive &amp; zaatar</span></span>
+                <span class="order-item-price">6€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Focaccia Maison" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Focaccia Maison">+</button>
+                </span>
+              </li>
+            </ul>
+          </div>
+          <div class="order-cat" role="tabpanel" id="order-cat-pasta" data-cat="pasta" aria-labelledby="order-tab-pasta" hidden>
+            <p class="resa-slot-label">Pasta <span class="order-cat-meta">· 3 choix</span></p>
+            <ul class="order-list">
+              <li class="order-item" data-name="Rigatoni Tartufata" data-price="17">
+                <span class="order-item-body"><span class="order-item-name">Rigatoni Tartufata</span><span class="order-item-desc">Champignons de Paris, sauce crémeuse à la truffe, parmesan et aromates</span></span>
+                <span class="order-item-price">17€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Rigatoni Tartufata" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Rigatoni Tartufata">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="Gnocchi alla Sorrentina" data-price="16">
+                <span class="order-item-body"><span class="order-item-name">Gnocchi alla Sorrentina</span><span class="order-item-desc">Sauce tomate, mozzarella gratinée</span></span>
+                <span class="order-item-price">16€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Gnocchi alla Sorrentina" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Gnocchi alla Sorrentina">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="Penne Salsa Verde" data-price="16">
+                <span class="order-item-body"><span class="order-item-name">Penne Salsa Verde</span><span class="order-item-desc">Sauce onctueuse à la courgette, parmesan, huile d’olive et basilic</span></span>
+                <span class="order-item-price">16€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Penne Salsa Verde" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Penne Salsa Verde">+</button>
+                </span>
+              </li>
+            </ul>
+          </div>
+          <div class="order-cat" role="tabpanel" id="order-cat-dolci" data-cat="dolci" aria-labelledby="order-tab-dolci" hidden>
+            <p class="resa-slot-label">Dolci <span class="order-cat-meta">· 7 choix</span></p>
+            <ul class="order-list">
+              <li class="order-item" data-name="Tiramisù Classico" data-price="8">
+                <span class="order-item-body"><span class="order-item-name">Tiramisù Classico</span></span>
+                <span class="order-item-price">8€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Tiramisù Classico" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Tiramisù Classico">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="Tiramisù Pistacchio" data-price="9">
+                <span class="order-item-body"><span class="order-item-name">Tiramisù Pistacchio</span></span>
+                <span class="order-item-price">9€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Tiramisù Pistacchio" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Tiramisù Pistacchio">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="Panna Cotta" data-price="7">
+                <span class="order-item-body"><span class="order-item-name">Panna Cotta</span><span class="order-item-desc">Crème vanillée, texture fondante, coulis de fruits rouges</span></span>
+                <span class="order-item-price">7€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Panna Cotta" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Panna Cotta">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="Crème Brûlée" data-price="7">
+                <span class="order-item-body"><span class="order-item-name">Crème Brûlée</span></span>
+                <span class="order-item-price">7€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Crème Brûlée" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Crème Brûlée">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="Affogato Revisité Otto" data-price="8">
+                <span class="order-item-body"><span class="order-item-name">Affogato Revisité Otto</span><span class="order-item-desc">Glace vanille, espresso, tiramisu &amp; fruits secs</span></span>
+                <span class="order-item-price">8€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Affogato Revisité Otto" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Affogato Revisité Otto">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="Pizzetta Nutella" data-price="8">
+                <span class="order-item-body"><span class="order-item-name">Pizzetta Nutella</span><span class="order-item-desc">Nutella, sucre glace</span></span>
+                <span class="order-item-price">8€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Pizzetta Nutella" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Pizzetta Nutella">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="Café Gourmand" data-price="9">
+                <span class="order-item-body"><span class="order-item-name">Café Gourmand</span></span>
+                <span class="order-item-price">9€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Café Gourmand" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Café Gourmand">+</button>
+                </span>
+              </li>
+            </ul>
+          </div>
+          <div class="order-cat" role="tabpanel" id="order-cat-boissons" data-cat="boissons" aria-labelledby="order-tab-boissons" hidden>
+            <p class="resa-slot-label">Boissons <span class="order-cat-meta">· 8 choix</span></p>
+            <ul class="order-list">
+              <li class="order-item" data-name="Spritz Classico" data-price="9">
+                <span class="order-item-body"><span class="order-item-name">Spritz Classico</span></span>
+                <span class="order-item-price">9€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Spritz Classico" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Spritz Classico">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="Solare Spritz" data-price="9">
+                <span class="order-item-body"><span class="order-item-name">Solare Spritz</span></span>
+                <span class="order-item-price">9€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Solare Spritz" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Solare Spritz">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="Bière Pression 33cl" data-price="6">
+                <span class="order-item-body"><span class="order-item-name">Bière Pression 33cl</span></span>
+                <span class="order-item-price">6€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Bière Pression 33cl" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Bière Pression 33cl">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="Bière Bouteille Peroni" data-price="6">
+                <span class="order-item-body"><span class="order-item-name">Bière Bouteille Peroni</span></span>
+                <span class="order-item-price">6€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Bière Bouteille Peroni" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Bière Bouteille Peroni">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="Coca-Cola" data-price="5">
+                <span class="order-item-body"><span class="order-item-name">Coca-Cola</span></span>
+                <span class="order-item-price">5€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Coca-Cola" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Coca-Cola">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="Coca Zéro" data-price="5">
+                <span class="order-item-body"><span class="order-item-name">Coca Zéro</span></span>
+                <span class="order-item-price">5€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Coca Zéro" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Coca Zéro">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="Orangina" data-price="5">
+                <span class="order-item-body"><span class="order-item-name">Orangina</span></span>
+                <span class="order-item-price">5€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : Orangina" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : Orangina">+</button>
+                </span>
+              </li>
+              <li class="order-item" data-name="San Pellegrino / Perrier" data-price="5">
+                <span class="order-item-body"><span class="order-item-name">San Pellegrino / Perrier</span></span>
+                <span class="order-item-price">5€</span>
+                <span class="order-qty">
+                  <button type="button" class="order-qty-btn" data-step="-1" aria-label="Retirer : San Pellegrino / Perrier" disabled>−</button>
+                  <output class="order-qty-val" aria-live="polite">0</output>
+                  <button type="button" class="order-qty-btn" data-step="1" aria-label="Ajouter : San Pellegrino / Perrier">+</button>
+                </span>
+              </li>
+            </ul>
+          </div>
+          <p class="order-note">Toute la carte est disponible à emporter. Une précision, une allergie ? Dites-le nous dans la note, à l’étape 3.</p>
+          <p class="resa-error" data-error-for="items" hidden>Ajoutez au moins un plat à votre commande.</p>
+
+          <div class="order-bar">
+            <p class="order-bar-total">
+              <span class="order-bar-count" id="order-bar-count">Votre panier est vide</span>
+              <strong id="order-bar-amount">0€</strong>
+            </p>
+            <button type="button" class="order-next" data-next>Continuer<span aria-hidden="true">→</span></button>
+          </div>
+        </section>
+
+        <!-- Étape 2 — jour et heure de retrait -->
+        <section class="order-panel" data-step="2" aria-labelledby="order-step-2" hidden>
+          <div class="resa-step-head">
+            <span class="resa-step-num">02</span>
+            <h2 class="resa-step-title" id="order-step-2" tabindex="-1">Retrait</h2>
+          </div>
+
+          <h3 class="order-subtitle" id="order-day-title">Quel jour ?</h3>
+          <div class="resa-days" id="resa-days" role="radiogroup" aria-labelledby="order-day-title"></div>
+          <label class="resa-other-date">
+            <span>Une autre date</span>
+            <input type="date" id="resa-date-input" name="date">
+          </label>
+
+          <h3 class="order-subtitle" id="order-time-title">Heure de retrait ?</h3>
+          <div class="resa-slots" role="radiogroup" aria-labelledby="order-time-title">
+            <div class="resa-slot-group">
+              <p class="resa-slot-label">Midi</p>
+              <div class="resa-slot-row">
+                <label class="resa-slot"><input type="radio" name="time" value="12:00"><span>12:00</span></label>
+                <label class="resa-slot"><input type="radio" name="time" value="12:30"><span>12:30</span></label>
+                <label class="resa-slot"><input type="radio" name="time" value="13:00"><span>13:00</span></label>
+                <label class="resa-slot"><input type="radio" name="time" value="13:30"><span>13:30</span></label>
+                <label class="resa-slot"><input type="radio" name="time" value="14:00"><span>14:00</span></label>
+              </div>
+            </div>
+            <div class="resa-slot-group">
+              <p class="resa-slot-label">Soir</p>
+              <div class="resa-slot-row">
+                <label class="resa-slot"><input type="radio" name="time" value="18:30"><span>18:30</span></label>
+                <label class="resa-slot"><input type="radio" name="time" value="19:00"><span>19:00</span></label>
+                <label class="resa-slot"><input type="radio" name="time" value="19:30"><span>19:30</span></label>
+                <label class="resa-slot"><input type="radio" name="time" value="20:00"><span>20:00</span></label>
+                <label class="resa-slot"><input type="radio" name="time" value="20:30"><span>20:30</span></label>
+                <label class="resa-slot"><input type="radio" name="time" value="21:00"><span>21:00</span></label>
+                <label class="resa-slot"><input type="radio" name="time" value="21:30"><span>21:30</span></label>
+                <label class="resa-slot"><input type="radio" name="time" value="22:00"><span>22:00</span></label>
+              </div>
+            </div>
+          </div>
+          <p class="resa-error" data-error-for="time" hidden>Choisissez une heure de retrait.</p>
+
+          <div class="order-nav">
+            <button type="button" class="order-back" data-back><span aria-hidden="true">←</span> Modifier la commande</button>
+            <button type="button" class="order-next" data-next>Continuer<span aria-hidden="true">→</span></button>
+          </div>
+        </section>
+
+        <!-- Étape 3 — coordonnées et confirmation -->
+        <section class="order-panel" data-step="3" aria-labelledby="order-step-3" hidden>
+          <div class="resa-step-head">
+            <span class="resa-step-num">03</span>
+            <h2 class="resa-step-title" id="order-step-3" tabindex="-1">Vos coordonnées</h2>
+          </div>
+          <div class="resa-fields">
+            <label class="resa-field resa-field-full">
+              <span>Nom</span>
+              <input type="text" name="name" autocomplete="name" required placeholder="Giulia Rossi">
+            </label>
+            <label class="resa-field">
+              <span>Email</span>
+              <input type="email" name="email" autocomplete="email" required placeholder="giulia@exemple.fr">
+            </label>
+            <label class="resa-field">
+              <span>Téléphone</span>
+              <input type="tel" name="phone" autocomplete="tel" required placeholder="06 12 34 56 78" pattern="[0-9+ .\(\)\-]{8,}">
+            </label>
+            <label class="resa-field resa-field-full">
+              <span>Précisions, allergies, autres plats <em>(facultatif)</em></span>
+              <textarea name="notes" rows="3" placeholder="Sans gluten, une Rigatoni Tartufata en plus, bien coupée…"></textarea>
+            </label>
+          </div>
+
+          <button type="submit" class="resa-cta">
+            <span class="resa-cta-label">Confirmer ma commande</span>
+            <span class="resa-cta-summary" id="order-summary">Votre panier est vide</span>
+          </button>
+          <p class="resa-error" data-error-for="submit" role="alert" hidden></p>
+          <p class="resa-fineprint">Paiement au retrait, sur place. Confirmation par email.</p>
+          <div class="order-nav">
+            <button type="button" class="order-back" data-back><span aria-hidden="true">←</span> Changer le retrait</button>
+          </div>
+        </section>
+      </form>
+
+      <!-- Colonne droite : le comptoir et les infos pratiques -->
+      <aside class="resa-aside">
+        <div class="order-recap">
+          <h2 class="resa-info-title">Votre panier</h2>
+          <p class="order-recap-empty" id="order-recap-empty">Encore vide — choisissez parmi toute la carte.</p>
+          <ul class="order-recap-list" id="order-recap-list"></ul>
+          <p class="order-recap-pickup" id="order-recap-pickup" hidden></p>
+          <p class="order-recap-total"><span>Total</span><strong id="order-recap-total">0€</strong></p>
+          <p class="order-recap-note">Paiement au retrait, sur place.</p>
+        </div>
+
+        <figure class="resa-photo">
+          <img src="assets/img/photos/vente-a-emporter.jpg" alt="Le comptoir de vente à emporter d'Otto" width="1400" height="840">
+          <figcaption>
+            <span class="resa-photo-kicker">Retrait au comptoir</span>
+            <span class="resa-photo-quote">« Chaude dans sa boîte, comme en salle. »</span>
+          </figcaption>
+        </figure>
+
+        <div class="resa-info">
+          <h2 class="resa-info-title">Infos retrait</h2>
+          <dl class="resa-info-list">
+            <div>
+              <dt>Retrait</dt>
+              <dd><a href="https://maps.google.com/?q=53+bis+Bd+Arago+75013+Paris" target="_blank" rel="noopener">53 bis Bd Arago, 75013 Paris</a></dd>
+            </div>
+            <div>
+              <dt>Par téléphone</dt>
+              <dd><a class="resa-phone" href="tel:+33987140850">09 87 14 08 50</a></dd>
+            </div>
+            <div>
+              <dt>Horaires</dt>
+              <dd>
+                <span class="resa-hours"><span>Midi</span><span>12h00 – 14h15</span></span>
+                <span class="resa-hours"><span>Soir</span><span>18h30 – 22h15</span></span>
+                <span class="resa-hours-note">7 jours sur 7 · paiement au retrait</span>
+              </dd>
+            </div>
+          </dl>
+
+          <a class="resa-crosslink" href="reservation.html">
+            <span><strong>Envie de dîner chez nous ?</strong> Réservez une table en salle ou en terrasse.</span>
+            <span class="resa-crosslink-cta">Réserver une table →</span>
+          </a>
+
+          <p class="resa-policy">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span>Votre commande est enfournée pour l'heure choisie — passez à l'heure pour la recevoir bien chaude.</span>
+          </p>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="resa-toast" id="resa-toast" hidden>
+    <div class="resa-toast-card" role="dialog" aria-modal="true" aria-labelledby="resa-toast-title">
+      <span class="resa-toast-seal" aria-hidden="true">✓</span>
+      <p class="eyebrow">Grazie mille !</p>
+      <h2 class="resa-toast-title" id="resa-toast-title">C'est noté.</h2>
+      <p class="resa-toast-body" id="resa-toast-body"></p>
+      <button type="button" class="btn resa-toast-close" id="resa-toast-close">Parfait, à tout à l'heure</button>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <p><strong>Otto</strong></p>
+        <p>53 bis Bd Arago, 75013 Paris</p>
+        <p><a href="tel:+33987140850">09 87 14 08 50</a></p>
+      </div>
+      <div>
+        <p><a href="index.html">Accueil</a></p>
+        <p><a href="la-carte.html">La Carte</a></p>
+        <p><a href="photos.html">Photos</a></p>
+        <p><a href="reservation.html">Réservation</a></p>
+        <p><a href="commander.html">À emporter</a></p>
+        <p><a href="contact.html">Accès &amp; Contact</a></p>
+        <p><a href="about.html">À propos</a></p>
+      </div>
+      <div>
+        <p><a href="https://www.instagram.com/ottopizza75013/" target="_blank" rel="noopener">Instagram</a></p>
+        <p><a href="https://www.facebook.com/otto.paris13/" target="_blank" rel="noopener">Facebook</a></p>
+        <div class="lang-toggle" style="margin-top:1rem;">
+          <a href="index.html" aria-current="true">FR</a>
+          <a href="en/commander.html">EN</a>
+        </div>
+      </div>
+    </div>
+    <p class="footer-copyright">© Otto — Paris</p>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+<script src="assets/js/order-store.js"></script>
+<script src="assets/js/commander.js"></script>
+</body>
+</html>

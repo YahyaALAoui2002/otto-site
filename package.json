@@ -1,0 +1,13 @@
+{
+  "name": "otto-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Site Otto Pizza + API des commandes à emporter (SQLite intégré à Node)",
+  "engines": {
+    "node": ">=22.5"
+  },
+  "scripts": {
+    "start": "node server/server.js",
+    "test": "node --test server/*.test.js"
+  }
+}

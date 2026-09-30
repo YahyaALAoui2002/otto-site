@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Otto — Trattoria &amp; Pizzeria, Paris 13e</title>
+<meta name="description" content="Otto, trattoria et pizzeria de quartier au 13e arrondissement de Paris. Le goût du sud, sans détour.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;900&family=Cormorant+Garamond:ital@1&family=Inter:wght@400;500&family=Dosis:wght@800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Restaurant",
+  "name": "Otto",
+  "servesCuisine": "Italian",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "53 bis Boulevard Arago",
+    "addressLocality": "Paris",
+    "postalCode": "75013",
+    "addressCountry": "FR"
+  },
+  "openingHoursSpecification": [
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+      "opens": "12:00",
+      "closes": "14:15"
+    },
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+      "opens": "18:30",
+      "closes": "22:15"
+    }
+  ],
+  "priceRange": "€€",
+  "telephone": "+33987140850",
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.6",
+    "reviewCount": "670"
+  }
+}
+</script>
+</head>
+<body>
+
+<!-- Otto wordmark, curtain reveal — plays once per browser tab on the homepage.
+     Skip decision happens here, inline and synchronous, so a repeat visit
+     never flashes the curtain before removing it (see assets/js/main.js). -->
+<div class="site-reveal" aria-hidden="true">
+  <span class="site-reveal-mark">Otto</span>
+</div>
+<script>
+(function () {
+  try {
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var seen = sessionStorage.getItem('otto-revealed');
+    if (reduceMotion || seen) {
+      document.currentScript.previousElementSibling.remove();
+    } else {
+      sessionStorage.setItem('otto-revealed', '1');
+      document.documentElement.classList.add('is-revealing');
+    }
+  } catch (e) {}
+})();
+</script>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="index.html" class="nav-logo">
+      <img class="nav-logo-img" src="assets/img/otto-logo.png" alt="Otto Pizza" width="44" height="44">
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html" aria-current="page">Accueil</a></li>
+      <li><a href="la-carte.html">La Carte</a></li>
+      <li><a href="reservation.html">Réserver une table</a></li>
+      <li><a href="commander.html">Commander à emporter</a></li>
+      <li><a href="photos.html">Photos</a></li>
+      <li><a href="contact.html">Accès &amp; Contact</a></li>
+      <li><a href="about.html">À propos</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="lang-toggle">
+        <a href="index.html" aria-current="true">FR</a>
+        <a href="en/index.html">EN</a>
+      </div>
+      <button class="nav-toggle" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+  <div class="nav-mobile-panel">
+    <a href="index.html">Accueil</a>
+    <a href="la-carte.html">La Carte</a>
+    <a href="reservation.html">Réserver une table</a>
+    <a href="commander.html">Commander à emporter</a>
+    <a href="photos.html">Photos</a>
+    <a href="contact.html">Accès &amp; Contact</a>
+    <a href="about.html">À propos</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <!-- otto_hero_v5_wordmark — photo plein cadre (four à bois), gros wordmark "Otto Pizza"
+       posé directement dessus plutôt qu'à côté dans une figure encadrée. Olivier en coin
+       haut-gauche, texte et trio de CTA ronds alignés en bas. -->
+  <div class="hero-media">
+    <img src="assets/img/otto-hero-pizza.jpg" alt="Une pizza margherita napolitaine devant un four à bois, croûte alvéolée et léopardée"
+         fetchpriority="high" decoding="async">
+    <!-- Photo éditoriale (four à bois) en attendant une vraie photo de salle/terrasse — docs/04 §0. -->
+  </div>
+  <div class="hero-scrim" aria-hidden="true"></div>
+
+  <!-- Transition sculptée vers les piliers : courbe organique en crème plutôt
+       qu'un dégradé plat, ombre portée pour un relief tactile. -->
+  <div class="hero-divider" aria-hidden="true">
+    <svg viewBox="0 0 1440 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path class="hero-divider-front" d="M0,50 C300,15 600,15 900,55 C1100,80 1250,70 1440,40 L1440,100 L0,100 Z"></path>
+    </svg>
+  </div>
+
+  <div class="hero-inner">
+    <div class="hero-brand">
+      <h1 class="hero-wordmark">
+        <span class="hero-wordmark-line">Otto</span>
+        <span class="hero-wordmark-line">Pizza</span>
+      </h1>
+      <p class="hero-tagline">Le goût du sud, sans détour.</p>
+      <p class="hero-sub">Une trattoria et pizzeria de quartier, dans le 13ᵉ, où l'on mange la vraie cuisine du sud sans façons.</p>
+    </div>
+    <!-- Hors de .hero-brand : la grille reprend les colonnes des piliers pour que
+         chaque badge tombe à l'aplomb de sa carte. -->
+    <div class="hero-cta-group">
+      <a href="la-carte.html" class="hero-cta">Notre carte</a>
+      <a href="reservation.html" class="hero-cta">Réservez une&nbsp;table</a>
+      <a href="commander.html" class="hero-cta">Commander à&nbsp;emporter</a>
+    </div>
+  </div>
+
+  <div class="hero-scroll-cue" aria-hidden="true"></div>
+</header>
+
+<section class="pillars-section">
+  <div class="container">
+    <div class="pillars">
+      <div class="pillar">
+        <figure class="pillar-photo">
+          <img src="assets/img/pillar-produit.jpg" alt="Gros plan sur une pizza Otto à la sortie du four : croûte alvéolée, mozzarella fondante et basilic frais" loading="lazy" decoding="async">
+        </figure>
+        <h3>Le produit</h3>
+        <p>Pizzas et pâtes maison, produits locaux et de saison.</p>
+      </div>
+      <div class="pillar">
+        <figure class="pillar-photo">
+          <img src="assets/img/otto-dish-09.jpg" alt="Aperitivo sur la terrasse d'Otto, Aperol et prosecco sur une table en ardoise" loading="lazy" decoding="async">
+        </figure>
+        <h3>L'ambiance</h3>
+        <p>Tables partagées, esprit convivial, sans chichis.</p>
+      </div>
+      <div class="pillar">
+        <figure class="pillar-photo">
+          <img src="assets/img/pillar-quartier-terrasse.jpg" alt="Tables dressées de pizzas sous la véranda d'Otto, face à une rue arborée du 13e" loading="lazy" decoding="async">
+        </figure>
+        <h3>Le quartier</h3>
+        <p>L'esprit trattoria au cœur du 13e, chaleureux et ouvert à tous.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden;" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="icon-google" viewBox="0 0 48 48">
+    <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/>
+    <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/>
+    <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/>
+    <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/>
+  </symbol>
+</svg>
+
+<section class="reviews-section" aria-labelledby="reviews-heading">
+  <div class="container">
+    <div class="reviews-head">
+      <h2 id="reviews-heading">Ce qu'on en dit</h2>
+      <p class="reviews-rating">
+        <span class="reviews-rating-stars" aria-hidden="true">★★★★★</span>
+        <strong>4,6★</strong> sur plus de 670 avis Google
+      </p>
+    </div>
+
+    <div class="reviews-viewport" role="region" aria-label="Avis clients Google, défilement automatique">
+      <ul class="reviews-track">
+        <li class="review-card">
+          <div class="review-stars" role="img" aria-label="5 sur 5 étoiles">★★★★★</div>
+          <blockquote class="review-quote"><p>« Pizza excellente : la pâte croustillante à souhait, très bien garnie avec des produits de qualité. »</p></blockquote>
+          <footer class="review-meta">
+            <span class="review-name">ZZ</span>
+            <span class="review-badge"><svg class="review-badge-icon" aria-hidden="true"><use href="#icon-google"></use></svg>Google · il y a 1 mois</span>
+          </footer>
+        </li>
+        <li class="review-card">
+          <div class="review-stars" role="img" aria-label="5 sur 5 étoiles">★★★★★</div>
+          <blockquote class="review-quote"><p>« One of the best pizzas I've had outside Italy. »</p></blockquote>
+          <footer class="review-meta">
+            <span class="review-name">Hoda Hamedi</span>
+            <span class="review-badge"><svg class="review-badge-icon" aria-hidden="true"><use href="#icon-google"></use></svg>Google · il y a 2 mois</span>
+          </footer>
+        </li>
+        <li class="review-card">
+          <div class="review-stars" role="img" aria-label="5 sur 5 étoiles">★★★★★</div>
+          <blockquote class="review-quote"><p>« The pizzas were amazing, and the wait staff were lovely and friendly and so helpful. »</p></blockquote>
+          <footer class="review-meta">
+            <span class="review-name">Anthony O'Leary</span>
+            <span class="review-badge"><svg class="review-badge-icon" aria-hidden="true"><use href="#icon-google"></use></svg>Google · il y a 3 semaines</span>
+          </footer>
+        </li>
+        <!-- Duplicate set — feeds the CSS marquee (translateX 0 → -50%) so the loop has no visible seam. -->
+        <li class="review-card" aria-hidden="true">
+          <div class="review-stars" role="img" aria-label="5 sur 5 étoiles">★★★★★</div>
+          <blockquote class="review-quote"><p>« Pizza excellente : la pâte croustillante à souhait, très bien garnie avec des produits de qualité. »</p></blockquote>
+          <footer class="review-meta">
+            <span class="review-name">ZZ</span>
+            <span class="review-badge"><svg class="review-badge-icon" aria-hidden="true"><use href="#icon-google"></use></svg>Google · il y a 1 mois</span>
+          </footer>
+        </li>
+        <li class="review-card" aria-hidden="true">
+          <div class="review-stars" role="img" aria-label="5 sur 5 étoiles">★★★★★</div>
+          <blockquote class="review-quote"><p>« One of the best pizzas I've had outside Italy. »</p></blockquote>
+          <footer class="review-meta">
+            <span class="review-name">Hoda Hamedi</span>
+            <span class="review-badge"><svg class="review-badge-icon" aria-hidden="true"><use href="#icon-google"></use></svg>Google · il y a 2 mois</span>
+          </footer>
+        </li>
+        <li class="review-card" aria-hidden="true">
+          <div class="review-stars" role="img" aria-label="5 sur 5 étoiles">★★★★★</div>
+          <blockquote class="review-quote"><p>« The pizzas were amazing, and the wait staff were lovely and friendly and so helpful. »</p></blockquote>
+          <footer class="review-meta">
+            <span class="review-name">Anthony O'Leary</span>
+            <span class="review-badge"><svg class="review-badge-icon" aria-hidden="true"><use href="#icon-google"></use></svg>Google · il y a 3 semaines</span>
+          </footer>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="menu-section">
+  <div class="container">
+    <h2>Quelques spécialités</h2>
+    <div class="menu-preview-row">
+      <div class="item">
+        <img src="assets/img/otto-dish-02.jpg" alt="Pizza Margherita" style="aspect-ratio:4/3;object-fit:cover;border-radius:2px;">
+        <h3 style="margin-top:0.75rem;font-size:1.1rem;">Margherita — 12€</h3>
+      </div>
+      <div class="item">
+        <img src="assets/img/otto-dish-06.jpg" alt="Pizza Capricciosa" style="aspect-ratio:4/3;object-fit:cover;border-radius:2px;">
+        <h3 style="margin-top:0.75rem;font-size:1.1rem;">Capricciosa — 18€</h3>
+      </div>
+      <div class="item" style="background:rgba(var(--ink-rgb),0.06);border-radius:2px;padding:1.5rem;display:flex;flex-direction:column;justify-content:center;aspect-ratio:4/3;">
+        <h3 style="font-size:1.1rem;">Super Diavola — 17€</h3>
+        <p class="eyebrow" style="margin-top:0.5rem;">Photo à venir</p>
+      </div>
+      <div class="item" style="background:rgba(var(--ink-rgb),0.06);border-radius:2px;padding:1.5rem;display:flex;flex-direction:column;justify-content:center;aspect-ratio:4/3;">
+        <h3 style="font-size:1.1rem;">Tiramisù Pistache — 9€</h3>
+        <p class="eyebrow" style="margin-top:0.5rem;">Photo à venir</p>
+      </div>
+    </div>
+    <p style="margin-top:1.5rem;"><a href="la-carte.html" class="btn btn-outline">Voir la carte complète</a></p>
+  </div>
+</section>
+
+<section class="photos-teaser" aria-labelledby="photos-teaser-heading">
+  <div class="container">
+    <div class="photos-teaser-head">
+      <div>
+        <p class="eyebrow">Galerie</p>
+        <h2 id="photos-teaser-heading">Otto en images</h2>
+        <p>Les pizzas, la salle, la terrasse et le four — un aperçu avant de passer à table.</p>
+      </div>
+      <a href="photos.html" class="btn">Voir toutes les photos <span aria-hidden="true">&rarr;</span></a>
+    </div>
+    <div class="photos-teaser-grid">
+      <a href="photos.html" class="photos-teaser-item" aria-label="Voir la galerie photos — Assortiment de pizzas Otto vues du dessus"><img src="assets/img/photos/pizzas-assortiment-vue-dessus.jpg" alt="Assortiment de pizzas Otto vues du dessus" width="1400" height="840" loading="lazy" decoding="async"></a>
+      <a href="photos.html" class="photos-teaser-item" aria-label="Voir la galerie photos — La façade et la terrasse d'Otto, boulevard Arago"><img src="assets/img/photos/facade-terrasse.jpg" alt="La façade et la terrasse d'Otto, boulevard Arago" width="1400" height="840" loading="lazy" decoding="async"></a>
+      <a href="photos.html" class="photos-teaser-item" aria-label="Voir la galerie photos — Pizza tomate, burrata et basilic"><img src="assets/img/photos/pizza-tomate-burrata-basilic.jpg" alt="Pizza tomate, burrata et basilic" width="1400" height="840" loading="lazy" decoding="async"></a>
+      <a href="photos.html" class="photos-teaser-item" aria-label="Voir la galerie photos — Le pizzaiolo enfourne une pizza"><img src="assets/img/photos/pizzaiolo-enfournement.jpg" alt="Le pizzaiolo enfourne une pizza" width="1400" height="840" loading="lazy" decoding="async"></a>
+      <a href="photos.html" class="photos-teaser-item" aria-label="Voir la galerie photos — Tiramisu maison"><img src="assets/img/photos/tiramisu.jpg" alt="Tiramisu maison" width="1400" height="840" loading="lazy" decoding="async"></a>
+    </div>
+  </div>
+</section>
+
+<section class="access-section">
+  <div class="container access-row">
+    <div>
+      <h2>Accès</h2>
+      <p>53 bis Bd Arago, 75013 Paris<br>Métro Les Gobelins (ligne 7)</p>
+      <p>Lun–Dim : 12h00–14h15 et 18h30–22h15</p>
+      <p><a href="tel:+33987140850">09 87 14 08 50</a></p>
+    </div>
+    <div class="map-embed">Carte à intégrer (Stage 6, lazy-load)</div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <p><strong>Otto</strong></p>
+        <p>53 bis Bd Arago, 75013 Paris</p>
+        <p><a href="tel:+33987140850">09 87 14 08 50</a></p>
+      </div>
+      <div>
+        <p><a href="index.html">Accueil</a></p>
+        <p><a href="la-carte.html">La Carte</a></p>
+        <p><a href="photos.html">Photos</a></p>
+        <p><a href="reservation.html">Réservation</a></p>
+        <p><a href="commander.html">À emporter</a></p>
+        <p><a href="contact.html">Accès &amp; Contact</a></p>
+        <p><a href="about.html">À propos</a></p>
+      </div>
+      <div>
+        <p><a href="https://www.instagram.com/ottopizza75013/" target="_blank" rel="noopener">Instagram</a></p>
+        <p><a href="https://www.facebook.com/otto.paris13/" target="_blank" rel="noopener">Facebook</a></p>
+        <div class="lang-toggle" style="margin-top:1rem;">
+          <a href="index.html" aria-current="true">FR</a>
+          <a href="en/index.html">EN</a>
+        </div>
+      </div>
+    </div>
+    <p class="footer-copyright">© Otto — Paris</p>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+</body>
+</html>

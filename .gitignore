@@ -1,0 +1,23 @@
+node_modules/
+data/
+
+# Secrets / config locale
+.env
+.env.*
+*.pem
+*.key
+
+# Bases SQLite et journaux
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.log
+
+# Captures générées par _shot.js
+_shot_*.png
+
+# OS
+.DS_Store
+Thumbs.db

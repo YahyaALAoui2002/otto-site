@@ -1,0 +1,1197 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Otto — Tableau de bord</title>
+<!--
+  Otto — tableau de bord du patron. Un seul fichier, aucune dépendance : il s'ouvre tel quel.
+  Trois sources de données, au choix :
+   · Démo      — ouvert en double-clic (file://) : données fictives réalistes générées dans le navigateur ;
+   · En direct — servi par `npm start` sur /admin, ou connecté depuis le fichier à http://localhost:3000
+                 avec le code OTTO_ADMIN_TOKEN ;
+   · Export    — un fichier .json téléchargé depuis le mode « En direct », consultable hors ligne.
+  Les trois passent par la même interface (/api/admin/*) : la démo et l'export en rejouent une copie locale.
+-->
+<style>
+  :root {
+    --cream: #F7EFDD; --paper: #FFFCF5; --ink: #2B2620; --muted: #6f665a; --line: #e6dcc6;
+    --terracotta: #B5502D; --olive: #4B5C34; --sage: #DCE3C4;
+    --display: Georgia, 'Times New Roman', serif;
+    --body: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --mono: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+    --radius: 3px;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; background: var(--cream); color: var(--ink); font: 14px/1.45 var(--body); -webkit-font-smoothing: antialiased; }
+  button, input, select { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--terracotta); outline-offset: 2px; }
+  [hidden] { display: none !important; }
+  h1, h2, h3 { font-family: var(--display); font-weight: 600; margin: 0; }
+
+  .btn { border: 1px solid var(--line); background: var(--paper); border-radius: var(--radius); padding: .45rem .8rem; cursor: pointer; white-space: nowrap; }
+  .btn:hover { border-color: var(--ink); }
+  .btn:disabled { opacity: .45; cursor: default; border-color: var(--line); }
+  .btn-primary { background: var(--terracotta); border-color: var(--terracotta); color: #fff; }
+  .btn-primary:hover { background: #9c4325; border-color: #9c4325; }
+  .btn-danger { color: #a3261b; }
+  .btn-sm { padding: .25rem .55rem; font-size: 13px; }
+  input[type=text], input[type=url], input[type=search], input[type=password], input[type=date], select {
+    border: 1px solid var(--line); background: var(--paper); border-radius: var(--radius); padding: .42rem .6rem; min-width: 0;
+  }
+
+  /* ---- Connexion / choix de la source ---- */
+  .login { min-height: 100vh; display: grid; place-items: center; padding: 1.5rem; }
+  .login .card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 2rem; width: min(400px, 100%); display: grid; gap: .9rem; box-shadow: 0 20px 40px -24px rgba(43,38,32,.35); }
+  .login form { display: grid; gap: .9rem; }
+  .login h1 { font-size: 1.6rem; }
+  .login p { margin: 0; color: var(--muted); }
+  .login label { display: grid; gap: .3rem; font-weight: 500; }
+  .login .check { display: flex; gap: .5rem; align-items: center; font-weight: 400; color: var(--muted); }
+  .login .or { display: flex; align-items: center; gap: .75rem; color: var(--muted); font-size: 13px; }
+  .login .or::before, .login .or::after { content: ''; flex: 1; border-top: 1px solid var(--line); }
+  .login .alt { display: grid; gap: .5rem; }
+  .error { color: #a3261b; min-height: 1.2em; margin: 0; }
+
+  /* ---- En-tête ---- */
+  header.top { display: flex; align-items: center; gap: 1rem; padding: .8rem 1.5rem; background: var(--ink); color: var(--cream); flex-wrap: wrap; }
+  header.top h1 { font-size: 1.25rem; }
+  header.top h1 span { color: #d9a48c; font-weight: 400; }
+  header.top .spacer { flex: 1; }
+  header.top .meta { color: #cfc4ad; font-size: 13px; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+  header.top .btn { background: transparent; color: var(--cream); border-color: #5a5146; }
+  header.top .btn:hover { border-color: var(--cream); }
+  header.top label { display: flex; gap: .35rem; align-items: center; cursor: pointer; }
+
+  .banner { display: flex; gap: .75rem; align-items: center; flex-wrap: wrap; padding: .55rem 1.5rem; font-size: 13.5px; border-bottom: 1px solid var(--line); }
+  .banner.demo { background: #fbe5b6; color: #5c3a00; }
+  .banner.export { background: #dbe7f7; color: #1d3a5c; }
+  .banner.live { background: var(--sage); color: #34431f; }
+  .banner .btn { background: rgba(255,255,255,.6); }
+
+  main { padding: 1.25rem 1.5rem 3rem; max-width: 1600px; margin: 0 auto; }
+
+  /* ---- Chiffres clés ---- */
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: .75rem; margin-bottom: 1.25rem; }
+  .kpi { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: .85rem 1rem; }
+  .kpi .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+  .kpi .value { font-family: var(--display); font-size: 1.75rem; font-weight: 600; line-height: 1.2; margin-top: .2rem; }
+  .kpi .sub { color: var(--muted); font-size: 12.5px; margin-top: .15rem; }
+  .kpi.alert { border-color: #e9b2aa; }
+  .kpi.alert .sub { color: #a3261b; font-weight: 600; }
+
+  /* ---- Onglets ---- */
+  nav.tabs { display: flex; gap: .25rem; overflow-x: auto; border-bottom: 1px solid var(--line); margin-bottom: .9rem; }
+  nav.tabs button { border: 0; background: none; padding: .6rem .85rem; cursor: pointer; border-bottom: 2px solid transparent; color: var(--muted); white-space: nowrap; }
+  nav.tabs button:hover { color: var(--ink); }
+  nav.tabs button[aria-selected=true] { color: var(--ink); border-bottom-color: var(--terracotta); font-weight: 600; }
+  nav.tabs .count { font-size: 12px; background: var(--line); border-radius: 10px; padding: 0 .45rem; margin-left: .35rem; font-weight: 500; }
+
+  /* ---- Filtres ---- */
+  .toolbar { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-bottom: .75rem; }
+  .toolbar input[type=search] { width: 240px; }
+  .toolbar .group { display: flex; gap: .35rem; align-items: center; flex-wrap: wrap; }
+  .toolbar .group > span { color: var(--muted); font-size: 13px; }
+  .toolbar .spacer { flex: 1; }
+  .quick { display: flex; gap: .25rem; flex-wrap: wrap; }
+
+  /* ---- Table ---- */
+  .table-wrap { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); overflow: auto; max-height: calc(100vh - 360px); min-height: 200px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  th, td { padding: .5rem .7rem; text-align: left; border-bottom: 1px solid #f0e8d6; vertical-align: top; }
+  thead th { position: sticky; top: 0; background: #f3ead6; z-index: 1; font-weight: 600; white-space: nowrap; cursor: pointer; user-select: none; }
+  thead th:hover { background: #ece0c6; }
+  thead th .arrow { color: var(--terracotta); margin-left: .2rem; }
+  tbody tr { cursor: pointer; }
+  tbody tr:nth-child(even) { background: #fdf8ee; }
+  tbody tr:hover { background: #f8eedb; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.date { white-space: nowrap; font-variant-numeric: tabular-nums; }
+  td .clip { display: block; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mono { font-family: var(--mono); font-size: 12.5px; }
+  .null { color: #b8ad98; }
+  .link { color: var(--terracotta); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; background: none; border: 0; padding: 0; white-space: nowrap; }
+  .empty { padding: 3rem 1rem; text-align: center; color: var(--muted); }
+
+  .pager { display: flex; gap: .5rem; align-items: center; justify-content: flex-end; margin-top: .65rem; color: var(--muted); flex-wrap: wrap; }
+
+  /* ---- Badges de statut ---- */
+  .badge { display: inline-block; padding: .08rem .5rem; border-radius: 10px; font-size: 12px; font-weight: 600; white-space: nowrap; background: var(--line); color: var(--ink); }
+  .s-pending, .s-queued { background: #fbe5b6; color: #7a4b00; }
+  .s-confirmed { background: #dbe7f7; color: #1d4a7a; }
+  .s-preparing { background: #f8d9c9; color: #8a3413; }
+  .s-ready { background: var(--sage); color: #34431f; }
+  .s-collected, .s-sent, .s-read { background: #e4e0d8; color: #4d463c; }
+  .s-cancelled, .s-failed { background: #f5d0cb; color: #8d1f14; }
+
+  /* ---- Fiche détail ---- */
+  .overlay { position: fixed; inset: 0; background: rgba(43,38,32,.35); z-index: 10; }
+  aside.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(560px, 100%); background: var(--paper); z-index: 11; overflow-y: auto; box-shadow: -20px 0 40px -20px rgba(43,38,32,.4); display: flex; flex-direction: column; }
+  .drawer-head { position: sticky; top: 0; background: var(--paper); border-bottom: 1px solid var(--line); padding: 1rem 1.25rem; display: flex; gap: .75rem; align-items: center; z-index: 1; }
+  .drawer-head h2 { font-size: 1.35rem; flex: 1; }
+  .drawer-body { padding: 1rem 1.25rem 2rem; display: grid; gap: 1.25rem; }
+  .drawer-body h3 { font-size: 1rem; margin-bottom: .45rem; }
+  dl.kv { display: grid; grid-template-columns: max-content 1fr; gap: .3rem 1rem; margin: 0; }
+  dl.kv dt { color: var(--muted); }
+  dl.kv dd { margin: 0; word-break: break-word; }
+  .lines td, .lines th { padding: .35rem .4rem; }
+  .lines thead th { position: static; cursor: default; background: none; border-bottom: 1px solid var(--line); }
+  .lines tbody tr { cursor: default; background: none; }
+  .lines tfoot td { font-weight: 700; border: 0; }
+  .timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+  .timeline li { display: grid; grid-template-columns: 130px 1fr; gap: .6rem; }
+  .timeline time { color: var(--muted); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+  .note { background: #fbf2dc; border-left: 3px solid var(--terracotta); padding: .5rem .75rem; white-space: pre-wrap; }
+  .actions { display: flex; gap: .4rem; flex-wrap: wrap; }
+
+  .toast { position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--cream); padding: .6rem 1rem; border-radius: var(--radius); z-index: 20; }
+
+  @media (max-width: 700px) {
+    header.top, main, .banner { padding-left: .9rem; padding-right: .9rem; }
+    .toolbar input[type=search] { width: 100%; }
+    .table-wrap { max-height: none; }
+    .timeline li { grid-template-columns: 1fr; gap: 0; }
+  }
+</style>
+</head>
+<body>
+
+<section class="login" id="login" hidden>
+  <div class="card">
+    <h1>Otto <span style="font-weight:400">· tableau de bord</span></h1>
+    <p>Espace réservé au restaurant.</p>
+    <form id="login-form" autocomplete="off">
+      <label id="base-field" hidden>Adresse du serveur
+        <input type="url" id="base" placeholder="http://localhost:3000" spellcheck="false">
+      </label>
+      <label>Code d’accès (OTTO_ADMIN_TOKEN)
+        <input type="password" id="token" required autocomplete="current-password">
+      </label>
+      <label class="check"><input type="checkbox" id="remember"> Rester connecté sur cet appareil</label>
+      <button class="btn btn-primary" type="submit">Voir les données en direct</button>
+    </form>
+    <p class="error" id="login-error" role="alert"></p>
+    <div class="or">ou</div>
+    <div class="alt">
+      <button class="btn" type="button" id="open-demo">Voir la démo (données fictives)</button>
+      <button class="btn" type="button" data-open-export>Ouvrir un export (.json)…</button>
+    </div>
+  </div>
+</section>
+
+<input type="file" id="import" accept=".json,application/json" hidden>
+
+<div id="app" hidden>
+  <header class="top">
+    <h1>Otto <span>· tableau de bord</span></h1>
+    <div class="spacer"></div>
+    <div class="meta">
+      <span id="updated"></span>
+      <label id="auto-label"><input type="checkbox" id="auto" checked> Actualiser toutes les 30 s</label>
+      <button class="btn btn-sm" id="refresh" type="button">Actualiser</button>
+      <button class="btn btn-sm" id="download" type="button">Télécharger un export</button>
+      <button class="btn btn-sm" id="logout" type="button">Se déconnecter</button>
+    </div>
+  </header>
+  <div class="banner" id="banner" hidden></div>
+
+  <main>
+    <section class="kpis" id="kpis" aria-label="Chiffres clés"></section>
+    <nav class="tabs" id="tabs" role="tablist"></nav>
+
+    <div class="toolbar" id="toolbar">
+      <input type="search" id="q" placeholder="Rechercher…" aria-label="Rechercher">
+      <span id="facets" class="group"></span>
+      <span class="group" id="dates">
+        <select id="dateField" aria-label="Champ de date"></select>
+        <input type="date" id="from" aria-label="Du">
+        <span>→</span>
+        <input type="date" id="to" aria-label="Au">
+      </span>
+      <span class="quick" id="quick">
+        <button class="btn btn-sm" type="button" data-range="today">Aujourd’hui</button>
+        <button class="btn btn-sm" type="button" data-range="tomorrow">Demain</button>
+        <button class="btn btn-sm" type="button" data-range="week">7 prochains jours</button>
+        <button class="btn btn-sm" type="button" data-range="past30">30 derniers jours</button>
+      </span>
+      <button class="btn btn-sm" type="button" id="reset">Effacer les filtres</button>
+      <span class="spacer"></span>
+      <button class="btn btn-sm" type="button" id="csv">Exporter CSV</button>
+    </div>
+
+    <div class="table-wrap" id="table-wrap"></div>
+
+    <div class="pager">
+      <span id="range"></span>
+      <select id="limit" aria-label="Lignes par page">
+        <option value="25">25 / page</option><option value="50" selected>50 / page</option>
+        <option value="100">100 / page</option><option value="250">250 / page</option>
+      </select>
+      <button class="btn btn-sm" type="button" id="prev">← Précédent</button>
+      <button class="btn btn-sm" type="button" id="next">Suivant →</button>
+    </div>
+  </main>
+</div>
+
+<div class="overlay" id="overlay" hidden></div>
+<aside class="drawer" id="drawer" hidden aria-modal="true" role="dialog" aria-labelledby="drawer-title">
+  <div class="drawer-head">
+    <h2 id="drawer-title"></h2>
+    <button class="btn btn-sm" type="button" id="drawer-close" aria-label="Fermer">Fermer ✕</button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+</aside>
+
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+'use strict';
+// Toutes les valeurs venant des données sont insérées via textContent (jamais innerHTML) :
+// les notes et noms saisis par les clients ne peuvent pas injecter de HTML.
+
+const TABLES = ['orders', 'clients', 'sessions', 'menu_items', 'order_items', 'order_events', 'notifications', 'outbox'];
+const STATUSES = ['pending', 'confirmed', 'preparing', 'ready', 'collected', 'cancelled'];
+const OPEN_STATUSES = ['pending', 'confirmed', 'preparing', 'ready'];
+const STATUS_FLOW = ['pending', 'confirmed', 'preparing', 'ready', 'collected'];
+const LABELS = {
+  pending: 'En attente', confirmed: 'Confirmée', preparing: 'Au four', ready: 'Prête', collected: 'Retirée', cancelled: 'Annulée',
+  queued: 'En file', sent: 'Envoyé', failed: 'Échec', read: 'Lu',
+  client: 'Client', staff: 'Restaurant', system: 'Système', web: 'Site', email: 'Email', sms: 'SMS',
+  order_received: 'Commande reçue', order_confirmed: 'Confirmation', order_preparing: 'En préparation', order_ready: 'Prête',
+  order_collected: 'Retirée', order_cancelled: 'Annulation', order_reminder: 'Rappel',
+};
+const COLUMNS = {
+  id: 'ID', ref: 'Réf.', status: 'Statut', pickup_date: 'Retrait (jour)', pickup_slot: 'Créneau', customer_name: 'Client',
+  customer_email: 'Email', customer_phone: 'Téléphone', notes: 'Notes', total_cents: 'Total', currency: 'Devise',
+  payment_method: 'Paiement', created_at: 'Créé le', updated_at: 'Modifié le', confirmed_at: 'Confirmée le', ready_at: 'Prête le',
+  collected_at: 'Retirée le', cancelled_at: 'Annulée le', cancel_reason: 'Motif d’annulation', item_count: 'Plats', client_id: 'Client (ID)',
+  name: 'Nom', email: 'Email', phone: 'Téléphone', last_seen_at: 'Vu le', order_count: 'Commandes', spent_cents: 'Dépensé',
+  token_hash: 'Empreinte du jeton', user_agent: 'Navigateur', expires_at: 'Expire le', category: 'Catégorie', price_cents: 'Prix',
+  active: 'Active', sold: 'Vendus', order_id: 'Commande (ID)', order_ref: 'Commande', menu_item_id: 'Plat (ID)',
+  unit_price_cents: 'Prix unitaire', quantity: 'Qté', line_total_cents: 'Total ligne', actor: 'Par', note: 'Note', kind: 'Type',
+  channel: 'Canal', title: 'Titre', body: 'Message', recipient: 'Destinataire', attempts: 'Essais', last_error: 'Dernière erreur',
+  next_attempt_at: 'Prochain essai', sent_at: 'Envoyé le', read_at: 'Lu le',
+};
+const AUTO_MS = 30000;
+const IS_FILE = location.protocol === 'file:';
+
+const $ = (id) => document.getElementById(id);
+const state = { table: 'orders', q: '', filters: {}, dateField: '', from: '', to: '', sort: '', dir: 'desc', limit: 50, offset: 0 };
+// mode : 'live' (API du serveur) | 'demo' (données fictives) | 'export' (fichier .json) ; local = copie rejouée en mémoire.
+const source = { mode: null, base: '', local: null, label: '' };
+let summary = null;
+let current = null;   // dernière page reçue
+let openOrderId = null;
+let timer = null;
+
+// ---- Petits utilitaires ----
+function h(tag, attrs = {}, ...children) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (v === undefined || v === null || v === false) continue;
+    if (k === 'class') el.className = v;
+    else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v === true ? '' : v);
+  }
+  for (const c of children.flat()) if (c !== null && c !== undefined && c !== false) el.append(c instanceof Node ? c : String(c));
+  return el;
+}
+const euro = (cents) => (Number(cents) / 100).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
+const DATE_FMT = new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+const dateTime = (iso) => { const d = new Date(iso); return isNaN(d) ? iso : DATE_FMT.format(d); };
+const dayLabel = (iso) => new Intl.DateTimeFormat('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${iso}T00:00:00Z`));
+const longDate = (iso) => new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(`${iso}T00:00:00Z`));
+const addDays = (iso, n) => { const d = new Date(`${iso}T00:00:00Z`); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+const label = (v) => LABELS[v] || v;
+const colLabel = (c) => COLUMNS[c] || c;
+const badge = (s) => h('span', { class: `badge s-${s}` }, label(s));
+const isUuid = (v) => typeof v === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-/.test(v);
+function toast(msg) {
+  const t = $('toast'); t.textContent = msg; t.hidden = false;
+  clearTimeout(toast.t); toast.t = setTimeout(() => { t.hidden = true; }, 3500);
+}
+function download(name, content, type) {
+  const a = h('a', { href: URL.createObjectURL(new Blob([content], { type })), download: name });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+// Heure de Paris, quel que soit le fuseau de l'ordinateur.
+function parisNow() {
+  const p = Object.fromEntries(new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(new Date()).map((x) => [x.type, x.value]));
+  return { date: `${p.year}-${p.month}-${p.day}`, minutes: Number(p.hour) * 60 + Number(p.minute) };
+}
+const offsets = new Map();
+function parisOffset(date) {   // minutes d'avance de Paris sur UTC ce jour-là (60 ou 120)
+  if (!offsets.has(date)) {
+    let min = 60;
+    try {
+      const name = new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Paris', timeZoneName: 'shortOffset' })
+        .formatToParts(new Date(`${date}T12:00:00Z`)).find((x) => x.type === 'timeZoneName').value;
+      const m = name.match(/GMT([+-]\d+)(?::(\d+))?/);
+      min = m ? Number(m[1]) * 60 + Math.sign(Number(m[1])) * Number(m[2] || 0) : 0;
+    } catch { /* navigateur ancien : heure d'hiver par défaut */ }
+    offsets.set(date, min);
+  }
+  return offsets.get(date);
+}
+const parisToIso = (date, minutes) => new Date(Date.parse(`${date}T00:00:00Z`) + (minutes - parisOffset(date)) * 60000).toISOString();
+const toMinutes = (hhmm) => { const [a, b] = hhmm.split(':').map(Number); return a * 60 + b; };
+
+// =====================================================================
+// Copie locale de l'API comptoir (démo et export) — mêmes réponses que server/db.js.
+// À garder alignée avec ADMIN_TABLES côté serveur.
+// =====================================================================
+const TABLE_DEFS = {
+  orders: {
+    label: 'Commandes',
+    columns: ['ref', 'status', 'pickup_date', 'pickup_slot', 'customer_name', 'customer_phone', 'customer_email', 'item_count', 'total_cents',
+      'notes', 'created_at', 'updated_at', 'confirmed_at', 'ready_at', 'collected_at', 'cancelled_at', 'cancel_reason', 'payment_method',
+      'currency', 'client_id', 'id'],
+    sort: [['pickup_date', 'desc'], ['pickup_slot', 'desc'], ['created_at', 'desc']],
+    dates: ['pickup_date', 'created_at'], facets: { status: STATUSES },
+    search: ['ref', 'customer_name', 'customer_email', 'customer_phone', 'notes', 'client_id', 'id'],
+  },
+  clients: {
+    label: 'Clients', columns: ['id', 'name', 'email', 'phone', 'created_at', 'last_seen_at', 'order_count', 'spent_cents'],
+    sort: [['last_seen_at', 'desc']], dates: ['created_at', 'last_seen_at'], search: ['id', 'name', 'email', 'phone'],
+  },
+  sessions: {
+    label: 'Sessions', columns: ['token_hash', 'client_id', 'user_agent', 'created_at', 'last_seen_at', 'expires_at'],
+    sort: [['last_seen_at', 'desc']], dates: ['created_at', 'last_seen_at', 'expires_at'], search: ['client_id', 'user_agent'],
+  },
+  menu_items: {
+    label: 'Carte', columns: ['id', 'name', 'category', 'price_cents', 'active', 'sold'],
+    sort: [['category', 'asc'], ['name', 'asc']], facets: { category: null, active: null }, search: ['name', 'category'],
+  },
+  order_items: {
+    label: 'Lignes de commande',
+    columns: ['id', 'order_id', 'menu_item_id', 'name', 'unit_price_cents', 'quantity', 'line_total_cents', 'order_ref', 'pickup_date'],
+    sort: [['id', 'desc']], dates: ['pickup_date'], search: ['order_id', 'order_ref', 'name'],
+  },
+  order_events: {
+    label: 'Historique des statuts', columns: ['id', 'order_id', 'status', 'actor', 'note', 'created_at', 'order_ref'],
+    sort: [['id', 'desc']], dates: ['created_at'], facets: { status: STATUSES, actor: ['client', 'staff', 'system'] },
+    search: ['order_id', 'order_ref', 'note'],
+  },
+  notifications: {
+    label: 'Notifications',
+    columns: ['id', 'client_id', 'order_id', 'kind', 'channel', 'status', 'title', 'body', 'recipient', 'created_at', 'attempts',
+      'last_error', 'next_attempt_at', 'sent_at', 'read_at', 'order_ref'],
+    sort: [['id', 'desc']], dates: ['created_at'], facets: { channel: null, status: null, kind: null },
+    search: ['order_id', 'order_ref', 'client_id', 'recipient', 'title', 'body'],
+  },
+  outbox: {
+    label: 'File d’emails',
+    columns: ['id', 'status', 'kind', 'recipient', 'title', 'body', 'attempts', 'last_error', 'next_attempt_at', 'created_at', 'sent_at',
+      'order_id', 'order_ref'],
+    sort: [['id', 'desc']], dates: ['created_at'], facets: { status: ['queued', 'sent', 'failed'], kind: null },
+    search: ['order_id', 'order_ref', 'recipient', 'title', 'last_error'],
+  },
+};
+const RAW_TABLES = ['menu_items', 'clients', 'sessions', 'orders', 'order_items', 'order_events', 'notifications'];
+const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
+
+// Mêmes textes que les notifications envoyées par le serveur.
+function message(o, status) {
+  const when = `${longDate(o.pickup_date)} à ${o.pickup_slot}`;
+  return {
+    pending: ['order_received', 'Commande reçue', `Commande ${o.ref} bien reçue pour ${when}. On vous confirme dès que le four l'a en vue.`],
+    confirmed: ['order_confirmed', 'Commande confirmée', `Commande ${o.ref} confirmée — retrait ${when}, au 53 bis Bd Arago.`],
+    preparing: ['order_preparing', 'Au four !', `Votre commande ${o.ref} est en préparation.`],
+    ready: ['order_ready', 'Prête au comptoir', `Votre commande ${o.ref} vous attend, bien chaude, au 53 bis Bd Arago.`],
+    collected: ['order_collected', 'Buon appetito !', `Merci pour votre commande ${o.ref}. À bientôt chez Otto.`],
+    cancelled: ['order_cancelled', 'Commande annulée', `Votre commande ${o.ref} du ${when} est annulée.`],
+    reminder: ['order_reminder', 'Rappel : retrait bientôt', `Votre commande ${o.ref} sera prête ${when}, au 53 bis Bd Arago. Paiement au retrait.`],
+  }[status];
+}
+
+function createLocalBackend(ds) {
+  const fail = (msg) => { throw new Error(msg); };
+  const sumBy = (rows, key, value, keep = () => true) => {
+    const m = new Map();
+    for (const r of rows) if (keep(r)) m.set(r[key], (m.get(r[key]) || 0) + (value ? Number(r[value]) : 1));
+    return m;
+  };
+  const pick = (row, cols) => Object.fromEntries(cols.map((c) => [c, row[c] ?? null]));
+
+  function view(name) {
+    const cols = TABLE_DEFS[name].columns;
+    const byId = new Map(ds.orders.map((o) => [o.id, o]));
+    const ref = (id) => byId.get(id)?.ref ?? null;
+    switch (name) {
+      case 'orders': {
+        const qty = sumBy(ds.order_items, 'order_id', 'quantity');
+        return ds.orders.map((o) => pick({ ...o, item_count: qty.get(o.id) || 0 }, cols));
+      }
+      case 'clients': {
+        const count = sumBy(ds.orders, 'client_id');
+        const spent = sumBy(ds.orders, 'client_id', 'total_cents', (o) => o.status !== 'cancelled');
+        return ds.clients.map((c) => pick({ ...c, order_count: count.get(c.id) || 0, spent_cents: spent.get(c.id) || 0 }, cols));
+      }
+      case 'menu_items': {
+        const sold = sumBy(ds.order_items, 'menu_item_id', 'quantity', (i) => byId.get(i.order_id)?.status !== 'cancelled');
+        return ds.menu_items.map((m) => pick({ ...m, sold: sold.get(m.id) || 0 }, cols));
+      }
+      case 'order_items':
+        return ds.order_items.map((i) => pick({ ...i, order_ref: ref(i.order_id), pickup_date: byId.get(i.order_id)?.pickup_date }, cols));
+      case 'order_events':
+      case 'notifications':
+        return ds[name].map((r) => pick({ ...r, order_ref: ref(r.order_id) }, cols));
+      case 'outbox':
+        return ds.notifications.filter((n) => n.channel === 'email').map((r) => pick({ ...r, order_ref: ref(r.order_id) }, cols));
+      default:
+        return ds[name].map((r) => pick(r, cols));
+    }
+  }
+
+  // Tri façon SQLite : NULL d'abord, nombres par valeur, textes octet par octet.
+  const cmp = (a, b) => {
+    if (a === b) return 0;
+    if (a === null || a === undefined) return -1;
+    if (b === null || b === undefined) return 1;
+    if (typeof a === 'number' && typeof b === 'number') return a - b;
+    return String(a) < String(b) ? -1 : 1;
+  };
+
+  function browse(name, params) {
+    const t = Object.hasOwn(TABLE_DEFS, name) ? TABLE_DEFS[name] : fail('Table inconnue.');
+    const all = view(name);
+    let rows = all;
+    const q = String(params.q || '').trim().toLowerCase().slice(0, 100);
+    if (q) rows = rows.filter((r) => t.search.some((c) => r[c] !== null && String(r[c]).toLowerCase().includes(q)));
+    for (const f of Object.keys(t.facets || {})) {
+      if (params[f] !== undefined && params[f] !== '') rows = rows.filter((r) => String(r[f]) === String(params[f]));
+    }
+    const dates = t.dates || [];
+    const dateField = dates.includes(params.dateField) ? params.dateField : dates[0] || null;
+    if (dateField && ISO_DAY.test(params.from || '')) rows = rows.filter((r) => r[dateField] && r[dateField].slice(0, 10) >= params.from);
+    if (dateField && ISO_DAY.test(params.to || '')) rows = rows.filter((r) => r[dateField] && r[dateField].slice(0, 10) <= params.to);
+    const order = t.columns.includes(params.sort) ? [[params.sort, params.dir === 'asc' ? 'asc' : 'desc']] : t.sort;
+    rows = [...rows].sort((a, b) => {
+      for (const [c, d] of order) { const x = cmp(a[c], b[c]); if (x) return d === 'asc' ? x : -x; }
+      return 0;
+    });
+    const limit = Math.min(500, Math.max(1, Number(params.limit) || 50));
+    const offset = Math.max(0, Number(params.offset) || 0);
+    const facets = Object.fromEntries(Object.entries(t.facets || {}).map(([f, values]) => [f, values
+      || [...new Set(all.map((r) => r[f]).filter((v) => v !== null))].sort(cmp)]));
+    return { table: name, label: t.label, columns: t.columns, facets, dates, dateField, total: rows.length, rows: rows.slice(offset, offset + limit), limit, offset };
+  }
+
+  function summaryData() {
+    const today = parisNow().date;
+    const byStatus = {};
+    for (const o of ds.orders) if (o.pickup_date === today) byStatus[o.status] = (byStatus[o.status] || 0) + 1;
+    const outbox = {};
+    for (const n of ds.notifications) if (n.channel === 'email') outbox[n.status] = (outbox[n.status] || 0) + 1;
+    return {
+      transport: source.mode === 'demo' ? 'démo' : 'export',
+      today,
+      todayByStatus: byStatus,
+      todayOrders: Object.entries(byStatus).reduce((n, [s, c]) => n + (s === 'cancelled' ? 0 : c), 0),
+      todayRevenueCents: ds.orders.filter((o) => o.pickup_date === today && o.status !== 'cancelled').reduce((s, o) => s + o.total_cents, 0),
+      openOrders: ds.orders.filter((o) => o.pickup_date >= today && OPEN_STATUSES.includes(o.status)).length,
+      outbox,
+      tables: Object.fromEntries(TABLES.map((k) => [k, { label: TABLE_DEFS[k].label, count: view(k).length }])),
+    };
+  }
+
+  function orderDetail(id) {
+    const o = ds.orders.find((x) => x.id === id) || fail('Commande introuvable.');
+    const client = ds.clients.find((c) => c.id === o.client_id);
+    const now = parisNow();
+    const left = Math.round((Date.parse(`${o.pickup_date}T00:00:00Z`) - Date.parse(`${now.date}T00:00:00Z`)) / 60000) + toMinutes(o.pickup_slot) - now.minutes;
+    return {
+      order: {
+        id: o.id, ref: o.ref, status: o.status,
+        active: OPEN_STATUSES.includes(o.status) && left > -120,
+        cancellable: ['pending', 'confirmed'].includes(o.status) && left >= 30,
+        pickup: { date: o.pickup_date, slot: o.pickup_slot },
+        customer: { name: o.customer_name, email: o.customer_email, phone: o.customer_phone }, notes: o.notes,
+        items: ds.order_items.filter((i) => i.order_id === id).sort((a, b) => a.id - b.id)
+          .map((i) => ({ name: i.name, unitPriceCents: i.unit_price_cents, quantity: i.quantity, lineTotalCents: i.line_total_cents })),
+        totalCents: o.total_cents, currency: o.currency, paymentMethod: o.payment_method,
+        createdAt: o.created_at, updatedAt: o.updated_at, confirmedAt: o.confirmed_at, readyAt: o.ready_at,
+        collectedAt: o.collected_at, cancelledAt: o.cancelled_at, clientId: o.client_id, cancelReason: o.cancel_reason,
+      },
+      events: ds.order_events.filter((e) => e.order_id === id).sort((a, b) => a.id - b.id)
+        .map((e) => ({ status: e.status, actor: e.actor, note: e.note, createdAt: e.created_at })),
+      notifications: ds.notifications.filter((n) => n.order_id === id).sort((a, b) => a.id - b.id)
+        .map((n) => ({ id: n.id, kind: n.kind, channel: n.channel, status: n.status, recipient: n.recipient, attempts: n.attempts,
+          lastError: n.last_error, createdAt: n.created_at, sentAt: n.sent_at, readAt: n.read_at })),
+      client: client ? { ...client, order_count: ds.orders.filter((x) => x.client_id === client.id).length } : null,
+    };
+  }
+
+  const nextId = (rows) => rows.reduce((m, r) => Math.max(m, r.id), 0) + 1;
+  const TS = { confirmed: 'confirmed_at', ready: 'ready_at', collected: 'collected_at', cancelled: 'cancelled_at' };
+  function setStatus(id, status, note) {
+    if (!STATUSES.includes(status)) fail('Statut inconnu.');
+    const o = ds.orders.find((x) => x.id === id) || fail('Commande introuvable.');
+    if (!OPEN_STATUSES.includes(o.status)) fail('Commande déjà clôturée.');
+    if (status !== 'cancelled' && STATUSES.indexOf(status) <= STATUSES.indexOf(o.status)) fail(`Passage ${o.status} → ${status} impossible.`);
+    const now = new Date().toISOString();
+    Object.assign(o, { status, updated_at: now }, TS[status] ? { [TS[status]]: now } : {}, status === 'cancelled' ? { cancel_reason: note || null } : {});
+    ds.order_events.push({ id: nextId(ds.order_events), order_id: id, status, actor: 'staff', note: note || null, created_at: now });
+    const [kind, title, body] = message(o, status);
+    const base = { client_id: o.client_id, order_id: id, kind, title, body, created_at: now, last_error: null, next_attempt_at: null, read_at: null };
+    ds.notifications.push({ ...base, id: nextId(ds.notifications), channel: 'web', status: 'sent', recipient: null, attempts: 0, sent_at: now });
+    ds.notifications.push({ ...base, id: nextId(ds.notifications), channel: 'email', status: 'queued', recipient: o.customer_email, attempts: 0, sent_at: null });
+    return { order: orderDetail(id).order };
+  }
+
+  return {
+    async handle(path, { method = 'GET', body } = {}) {
+      const url = new URL(path, 'http://local');
+      const p = url.pathname;
+      let m;
+      let result;
+      if (p === '/api/admin/summary') result = summaryData();
+      else if ((m = p.match(/^\/api\/admin\/tables\/([a-z_]+)$/))) result = browse(m[1], Object.fromEntries(url.searchParams));
+      else if ((m = p.match(/^\/api\/admin\/orders\/([^/]+)$/)) && method === 'GET') result = orderDetail(decodeURIComponent(m[1]));
+      else if (m && method === 'PATCH') { const b = JSON.parse(body || '{}'); result = setStatus(decodeURIComponent(m[1]), String(b.status), b.note); }
+      else fail('Route inconnue.');
+      return structuredClone(result);
+    },
+  };
+}
+
+// =====================================================================
+// Données fictives : ~5 semaines d'activité autour d'aujourd'hui, toujours les mêmes (graine fixe).
+// La carte est celle de commander.html.
+// =====================================================================
+const MENU = [
+  ['Marinara', 'pizze', 900], ['Margherita', 'pizze', 1200], ['Regina', 'pizze', 1600], ['Capricciosa', 'pizze', 1800],
+  ['4 Fromages Rossa', 'pizze', 1600], ['Super Diavola', 'pizze', 1700], ['Regina Deluxe', 'pizze', 1800], ['Bella', 'pizze', 1700],
+  ['Calabrese', 'pizze', 1600], ['New York Pepperoni', 'pizze', 1600], ['Insalata delle Puglie', 'entrees', 1600],
+  ['Insalata Mediterranea', 'entrees', 1600], ['Assiette Italienne', 'entrees', 1700], ['Salade Verte', 'entrees', 500],
+  ['Duo de Burrata Otto', 'entrees', 1400], ['Carpaccio de Bresaola', 'entrees', 1300], ['Focaccia Maison', 'entrees', 600],
+  ['Rigatoni Tartufata', 'pasta', 1700], ['Gnocchi alla Sorrentina', 'pasta', 1600], ['Penne Salsa Verde', 'pasta', 1600],
+  ['Tiramisù Classico', 'dolci', 800], ['Tiramisù Pistacchio', 'dolci', 900], ['Panna Cotta', 'dolci', 700], ['Crème Brûlée', 'dolci', 700],
+  ['Affogato Revisité Otto', 'dolci', 800], ['Pizzetta Nutella', 'dolci', 800], ['Café Gourmand', 'dolci', 900],
+  ['Spritz Classico', 'boissons', 900], ['Solare Spritz', 'boissons', 900], ['Bière Pression 33cl', 'boissons', 600],
+  ['Bière Bouteille Peroni', 'boissons', 600], ['Coca-Cola', 'boissons', 500], ['Coca Zéro', 'boissons', 500], ['Orangina', 'boissons', 500],
+  ['San Pellegrino / Perrier', 'boissons', 500], ['Pizza du mois — Figue & Gorgonzola', 'pizze', 1900, 0],
+];
+const SLOTS = ['12:00', '12:30', '13:00', '13:30', '14:00', '18:30', '19:00', '19:30', '20:00', '20:30', '21:00', '21:30', '22:00'];
+const FIRST = ['Camille', 'Léa', 'Hugo', 'Lucas', 'Manon', 'Chloé', 'Nathan', 'Inès', 'Jules', 'Sarah', 'Louis', 'Emma', 'Gabriel', 'Zoé',
+  'Arthur', 'Jade', 'Raphaël', 'Alice', 'Adam', 'Lina', 'Paul', 'Mila', 'Victor', 'Rose', 'Karim', 'Yasmine', 'Théo', 'Anaïs'];
+const LAST = ['Martin', 'Bernard', 'Dubois', 'Thomas', 'Robert', 'Richard', 'Petit', 'Durand', 'Leroy', 'Moreau', 'Simon', 'Laurent',
+  'Lefebvre', 'Michel', 'Garcia', 'Rossi', 'Bianchi', 'Fontaine', 'Chevalier', 'Roux', 'Benali', 'Nguyen'];
+const NOTES = ['Sans oignons svp', 'Bien cuite, merci !', 'Allergie aux fruits à coque', 'Burrata à part si possible',
+  'Je passerai peut-être 5 min en retard', 'Couverts et serviettes svp', 'Pizza coupée en 8 pour les enfants', 'Piment à part'];
+const UAS = ['Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 Version/18.6 Mobile Safari/604.1',
+  'Mozilla/5.0 (Linux; Android 15; Pixel 8) AppleWebKit/537.36 Chrome/140.0 Mobile Safari/537.36',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_6) AppleWebKit/605.1.15 Version/18.6 Safari/605.1.15',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/140.0 Safari/537.36'];
+const CANCEL_STAFF = ['Four en panne — client prévenu par téléphone', 'Rupture de burrata, client prévenu', 'Doublon de commande'];
+
+function makeDemoData() {
+  let seed = 20260930;
+  const rnd = () => { seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  const int = (min, max) => min + Math.floor(rnd() * (max - min + 1));
+  const pickOne = (arr) => arr[Math.floor(rnd() * arr.length)];
+  const chance = (p) => rnd() < p;
+  const hex = (n) => Array.from({ length: n }, () => Math.floor(rnd() * 16).toString(16)).join('');
+  const uuid = () => { const s = hex(32); return `${s.slice(0, 8)}-${s.slice(8, 12)}-4${s.slice(13, 16)}-${'89ab'[int(0, 3)]}${s.slice(17, 20)}-${s.slice(20)}`; };
+  const plain = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  const now = Date.now();
+  const nowIso = new Date(now).toISOString();
+  const plus = (iso, min) => new Date(Date.parse(iso) + min * 60000).toISOString();
+  const notAfterNow = (iso) => (Date.parse(iso) > now ? new Date(now - int(1, 10) * 60000).toISOString() : iso);
+  // Étape suivante : après la précédente, jamais dans le futur.
+  const after = (iso, prev) => {
+    const p = Date.parse(prev);
+    let t = Math.max(Date.parse(iso), p + int(1, 4) * 60000);
+    if (t > now) t = p + Math.max(1000, (now - p) * rnd());
+    return new Date(t).toISOString();
+  };
+  const { date: today, minutes: nowMin } = parisNow();
+
+  const ds = { menu_items: [], clients: [], sessions: [], orders: [], order_items: [], order_events: [], notifications: [] };
+  ds.menu_items = MENU.map(([name, category, price_cents, active = 1], i) => ({ id: i + 1, name, category, price_cents, active }));
+  const menu = ds.menu_items.filter((m) => m.active);
+  const pizzas = menu.filter((m) => m.category === 'pizze');
+
+  const people = Array.from({ length: 34 }, () => {
+    const first = pickOne(FIRST); const last = pickOne(LAST);
+    return { id: uuid(), name: `${first} ${last}`, orders: [],
+      email: `${plain(first)}.${plain(last)}${chance(0.5) ? int(1, 99) : ''}@${pickOne(['gmail.com', 'orange.fr', 'free.fr', 'outlook.fr', 'yahoo.fr', 'icloud.com'])}`,
+      phone: `0${pickOne([6, 7])} ${int(10, 99)} ${int(10, 99)} ${int(10, 99)} ${int(10, 99)}` };
+  });
+  const pool = people.flatMap((p, i) => Array(i < 8 ? 5 : 1).fill(p)); // quelques habitués
+
+  const REF = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const refs = new Set();
+  const newRef = () => { let r; do r = `OT-${Array.from({ length: 4 }, () => pickOne(REF)).join('')}`; while (refs.has(r)); refs.add(r); return r; };
+  const ids = { item: 1, event: 1, notif: 1 };
+
+  function notify(o, status, at) {
+    const [kind, title, body] = message(o, status);
+    const old = now - Date.parse(at) > 6 * 3600000;
+    const read = old && chance(0.7);
+    const common = { client_id: o.client_id, order_id: o.id, kind, title, body, created_at: at, last_error: null, next_attempt_at: null };
+    ds.notifications.push({ ...common, id: ids.notif++, channel: 'web', status: read ? 'read' : 'sent', recipient: null, attempts: 0,
+      sent_at: at, read_at: read ? notAfterNow(plus(at, int(2, 180))) : null });
+    ds.notifications.push({ ...common, id: ids.notif++, channel: 'email', status: 'sent', recipient: o.customer_email, attempts: 1,
+      sent_at: notAfterNow(plus(at, 1)), read_at: null });
+  }
+
+  for (let d = -34; d <= 6; d++) {
+    const date = addDays(today, d);
+    const weekend = [5, 6].includes(new Date(`${date}T00:00:00Z`).getUTCDay());
+    const count = d < 0 ? int(2, 5) + (weekend ? 3 : 0) : d === 0 ? 10 : Math.max(1, 6 - d + int(0, 2));
+    for (let k = 0; k < count; k++) {
+      const person = pickOne(pool);
+      const slot = pickOne(SLOTS);
+      const slotMin = toMinutes(slot);
+      const slotIso = parisToIso(date, slotMin);
+      // Commandes à venir : passées ces 4 derniers jours ; les autres : de 40 min à 8 h avant le créneau.
+      let created = d > 0 ? plus(nowIso, -int(10, 4 * 1440)) : plus(slotIso, -int(40, 480));
+      if (Date.parse(created) > now) created = plus(nowIso, -int(15, 240));
+
+      let status;
+      if (d < 0) status = chance(0.1) ? 'cancelled' : 'collected';
+      else if (d === 0) {
+        if (slotMin + 15 < nowMin) status = chance(0.1) ? 'cancelled' : 'collected';
+        else if (slotMin - 20 <= nowMin) status = pickOne(['preparing', 'ready']);
+        else if (slotMin - 120 <= nowMin) status = pickOne(['confirmed', 'confirmed', 'preparing']);
+        else status = pickOne(['pending', 'confirmed', 'confirmed']);
+      } else status = chance(0.05) ? 'cancelled' : chance(0.4) ? 'pending' : 'confirmed';
+
+      const lines = new Map();
+      const add = (m) => lines.set(m.id, { m, q: Math.min(9, (lines.get(m.id)?.q || 0) + (chance(0.75) ? 1 : 2)) });
+      add(pickOne(pizzas));
+      for (let i = int(0, 3); i > 0; i--) add(pickOne(menu));
+      const id = uuid();
+      let total = 0;
+      for (const { m, q } of lines.values()) {
+        ds.order_items.push({ id: ids.item++, order_id: id, menu_item_id: m.id, name: m.name, unit_price_cents: m.price_cents,
+          quantity: q, line_total_cents: m.price_cents * q });
+        total += m.price_cents * q;
+      }
+      const o = { id, ref: newRef(), client_id: person.id, status: 'pending', pickup_date: date, pickup_slot: slot,
+        customer_name: person.name, customer_email: person.email, customer_phone: person.phone, notes: chance(0.2) ? pickOne(NOTES) : null,
+        total_cents: total, currency: 'EUR', payment_method: 'on_pickup', created_at: created, updated_at: created,
+        confirmed_at: null, ready_at: null, collected_at: null, cancelled_at: null, cancel_reason: null };
+
+      // Étapes vécues par la commande, dans l'ordre, avec des horaires plausibles.
+      const steps = [['pending', 'client', null, created]];
+      const target = { confirmed: plus(created, int(2, 15)), preparing: plus(slotIso, -int(12, 25)), ready: plus(slotIso, -int(2, 10)), collected: plus(slotIso, int(0, 15)) };
+      const reached = status === 'cancelled' ? (chance(0.5) ? ['confirmed'] : []) : STATUS_FLOW.slice(1, STATUS_FLOW.indexOf(status) + 1);
+      for (const s of reached) steps.push([s, 'staff', null, after(target[s], steps.at(-1)[3])]);
+      if (status === 'cancelled') {
+        const byClient = chance(0.6);
+        const at = after(new Date(Math.min(Date.parse(plus(created, int(10, 300))), Date.parse(plus(slotIso, -35)))).toISOString(), steps.at(-1)[3]);
+        steps.push(['cancelled', byClient ? 'client' : 'staff', byClient ? 'Annulée par le client' : pickOne(CANCEL_STAFF), at]);
+      }
+      for (const [s, actor, note, at] of steps) {
+        o.status = s; o.updated_at = at;
+        if (s === 'confirmed') o.confirmed_at = at;
+        if (s === 'ready') o.ready_at = at;
+        if (s === 'collected') o.collected_at = at;
+        if (s === 'cancelled') { o.cancelled_at = at; o.cancel_reason = note; }
+        ds.order_events.push({ id: ids.event++, order_id: id, status: s, actor, note, created_at: at });
+        notify(o, s, at);
+        // Rappel automatique une heure avant le créneau.
+        if (s === 'confirmed' && ['preparing', 'ready', 'collected'].includes(status) && chance(0.5)) {
+          const reminder = plus(slotIso, -60);
+          if (Date.parse(reminder) > Date.parse(at) && Date.parse(reminder) < now) notify(o, 'reminder', reminder);
+        }
+      }
+      ds.orders.push(o);
+      person.orders.push(o);
+    }
+  }
+
+  // File d'emails réaliste : les plus récents encore en file, quelques échecs et un nouvel essai en attente.
+  ds.notifications.sort((a, b) => a.created_at.localeCompare(b.created_at) || a.id - b.id).forEach((n, i) => { n.id = i + 1; });
+  const emails = ds.notifications.filter((n) => n.channel === 'email');
+  emails.slice(-3).forEach((n) => Object.assign(n, { status: 'queued', attempts: 0, sent_at: null }));
+  const retry = emails.at(-6);
+  Object.assign(retry, { status: 'queued', attempts: 2, sent_at: null, last_error: 'The operation was aborted due to timeout', next_attempt_at: plus(nowIso, 4) });
+  for (const n of [emails[int(20, 80)], emails[int(100, 200)]].filter(Boolean)) {
+    Object.assign(n, { status: 'failed', attempts: 5, sent_at: null, last_error: 'HTTP 550 — boîte mail introuvable' });
+  }
+  ds.order_events.sort((a, b) => a.created_at.localeCompare(b.created_at)).forEach((e, i) => { e.id = i + 1; });
+
+  // Clients (profil = coordonnées de la dernière commande) + visiteurs anonymes, et leurs sessions.
+  const visitors = Array.from({ length: 7 }, () => ({ id: uuid(), name: null, email: null, phone: null, orders: [] }));
+  for (const p of [...people.filter((x) => x.orders.length), ...visitors]) {
+    const times = p.orders.map((o) => o.created_at).sort();
+    const first = times[0] ? plus(times[0], -int(5, 3 * 1440)) : notAfterNow(plus(nowIso, -int(30, 20 * 60)));
+    const last = times.at(-1) ? notAfterNow(plus(times.at(-1), int(1, 30))) : notAfterNow(plus(first, int(1, 20)));
+    ds.clients.push({ id: p.id, name: p.name, email: p.email, phone: p.phone, created_at: first, last_seen_at: last });
+    for (let s = chance(0.3) ? 2 : 1; s > 0; s--) {
+      ds.sessions.push({ token_hash: hex(64), client_id: p.id, user_agent: pickOne(UAS), created_at: first, last_seen_at: last,
+        expires_at: plus(first, 180 * 1440) });
+    }
+  }
+  return ds;
+}
+
+// =====================================================================
+// Accès aux données : l'API du serveur (en direct) ou la copie locale (démo / export)
+// =====================================================================
+const store = (remember) => (remember ? localStorage : sessionStorage);
+const getToken = () => sessionStorage.getItem('otto_admin') || localStorage.getItem('otto_admin') || '';
+const getBase = () => sessionStorage.getItem('otto_admin_base') || localStorage.getItem('otto_admin_base') || 'http://localhost:3000';
+function saveLogin(token, base, remember) {
+  for (const s of [sessionStorage, localStorage]) { s.removeItem('otto_admin'); s.removeItem('otto_admin_base'); }
+  if (token) store(remember).setItem('otto_admin', token);
+  if (base) store(remember).setItem('otto_admin_base', base);
+}
+function normalizeBase(value) {
+  let v = String(value || '').trim().replace(/\/+$/, '');
+  if (v && !/^https?:\/\//i.test(v)) v = `http://${v}`;
+  return v || 'http://localhost:3000';
+}
+
+class AuthError extends Error {}
+class ConnError extends Error {}
+async function api(path, options = {}) {
+  if (source.mode !== 'live') return source.local.handle(path, options);
+  let res;
+  try {
+    res = await fetch(source.base + path, {
+      ...options,
+      headers: { Authorization: `Bearer ${getToken()}`, ...(options.body ? { 'Content-Type': 'application/json' } : {}) },
+      cache: 'no-store',
+    });
+  } catch {
+    throw new ConnError(`Serveur injoignable (${source.base || location.origin}). Lancez « npm start », ou ouvrez la démo.`);
+  }
+  const data = await res.json().catch(() => ({}));
+  if (res.status === 401 || res.status === 403 || res.status === 429) throw new AuthError(data.message || 'Accès refusé.');
+  if (!res.ok) throw new Error(data.message || `Erreur ${res.status}`);
+  return data;
+}
+
+function showLogin(message = '') {
+  stopAuto();
+  closeDrawer();
+  source.mode = null;
+  source.local = null;
+  $('app').hidden = true;
+  $('login').hidden = false;
+  $('base-field').hidden = !IS_FILE;
+  $('base').value = getBase();
+  $('login-error').textContent = message;
+  $('token').value = '';
+  $('token').focus();
+}
+function handleError(e) {
+  if (e instanceof AuthError) { saveLogin('', IS_FILE ? source.base : '', false); showLogin(e.message); }
+  else if (e instanceof ConnError) showLogin(e.message);
+  else toast(e.message || 'Erreur réseau.');
+}
+
+async function enter(mode, { local = null, label = '' } = {}) {
+  Object.assign(source, { mode, local, label, base: mode === 'live' && IS_FILE ? getBase() : '' });
+  readHash();
+  await refreshSummary();          // en direct : valide le code (AuthError s'il est faux)
+  $('login').hidden = true;
+  $('app').hidden = false;
+  renderBanner();
+  await load();
+  if (mode === 'live' && $('auto').checked) startAuto(); else stopAuto();
+}
+const startLive = () => enter('live').catch(handleError);
+const startDemo = () => enter('demo', { local: createLocalBackend(makeDemoData()) }).catch(handleError);
+
+async function openExport(file) {
+  let json;
+  try {
+    json = JSON.parse(await file.text());
+    if (json?.format !== 'otto-export' || !RAW_TABLES.every((t) => Array.isArray(json.tables?.[t]))) throw new Error();
+  } catch {
+    const msg = `« ${file.name} » n’est pas un export du tableau de bord Otto.`;
+    if (source.mode) toast(msg); else $('login-error').textContent = msg;
+    return;
+  }
+  closeDrawer();
+  await enter('export', { local: createLocalBackend(json.tables), label: `Export du ${dateTime(json.exportedAt)} — ${file.name}` }).catch(handleError);
+}
+
+function renderBanner() {
+  const b = $('banner');
+  const live = source.mode === 'live';
+  $('auto-label').hidden = !live;
+  $('download').hidden = !live;
+  $('logout').textContent = live ? 'Se déconnecter' : 'Changer de source';
+  const actions = [
+    !live ? h('button', { class: 'btn btn-sm', type: 'button', onclick: () => showLogin() }, 'Se connecter au serveur') : null,
+    h('button', { class: 'btn btn-sm', type: 'button', 'data-open-export': '' }, 'Ouvrir un export…'),
+    source.mode === 'demo' ? h('button', { class: 'btn btn-sm', type: 'button', onclick: startDemo }, 'Réinitialiser la démo') : null,
+  ].filter(Boolean);
+  if (source.mode === 'demo') {
+    b.className = 'banner demo';
+    b.replaceChildren(h('strong', {}, 'Démo'), ' Données fictives générées dans votre navigateur — rien n’est enregistré ni envoyé.', ...actions);
+  } else if (source.mode === 'export') {
+    b.className = 'banner export';
+    b.replaceChildren(h('strong', {}, 'Hors ligne'), ` ${source.label}. Les changements de statut restent dans cet onglet.`, ...actions);
+  } else if (IS_FILE) {
+    b.className = 'banner live';
+    b.replaceChildren(h('strong', {}, 'En direct'), ` Connecté à ${source.base}.`, ...actions);
+  } else {
+    b.hidden = true;
+    return;
+  }
+  b.hidden = false;
+}
+
+$('login-form').addEventListener('submit', (ev) => {
+  ev.preventDefault();
+  saveLogin($('token').value.trim(), IS_FILE ? normalizeBase($('base').value) : '', $('remember').checked);
+  $('login-error').textContent = '';
+  startLive();
+});
+$('open-demo').addEventListener('click', startDemo);
+document.addEventListener('click', (ev) => { if (ev.target.closest('[data-open-export]')) $('import').click(); });
+$('import').addEventListener('change', (ev) => { const f = ev.target.files[0]; ev.target.value = ''; if (f) openExport(f); });
+$('logout').addEventListener('click', () => { if (source.mode === 'live') saveLogin('', IS_FILE ? source.base : '', false); showLogin(); });
+$('download').addEventListener('click', async () => {
+  try {
+    const data = await api('/api/admin/export');
+    download(`otto-export-${summary.today}.json`, JSON.stringify(data, null, 1), 'application/json');
+    toast('Export téléchargé — ouvrez-le ici plus tard, même sans serveur. Il contient des données clients : à garder en lieu sûr.');
+  } catch (e) { handleError(e); }
+});
+
+// ---- État ↔ adresse (#orders?f.status=pending…) pour pouvoir garder un onglet en favori ----
+function readHash() {
+  const [table, qs] = location.hash.slice(1).split('?');
+  const p = new URLSearchParams(qs || '');
+  state.table = TABLES.includes(table) ? table : 'orders';
+  state.q = p.get('q') || '';
+  state.dateField = p.get('dateField') || '';
+  state.from = p.get('from') || '';
+  state.to = p.get('to') || '';
+  state.sort = p.get('sort') || '';
+  state.dir = p.get('dir') === 'asc' ? 'asc' : 'desc';
+  state.limit = Number(p.get('limit')) || 50;
+  state.offset = Number(p.get('offset')) || 0;
+  state.filters = {};
+  for (const [k, v] of p) if (k.startsWith('f.')) state.filters[k.slice(2)] = v;
+}
+function queryParams(extra = {}) {
+  const p = new URLSearchParams();
+  if (state.q) p.set('q', state.q);
+  for (const [k, v] of Object.entries(state.filters)) if (v !== '') p.set(k, v);
+  if (state.dateField) p.set('dateField', state.dateField);
+  if (state.from) p.set('from', state.from);
+  if (state.to) p.set('to', state.to);
+  if (state.sort) { p.set('sort', state.sort); p.set('dir', state.dir); }
+  p.set('limit', state.limit);
+  p.set('offset', state.offset);
+  for (const [k, v] of Object.entries(extra)) p.set(k, v);
+  return p;
+}
+function writeHash() {
+  const p = new URLSearchParams();
+  if (state.q) p.set('q', state.q);
+  for (const [k, v] of Object.entries(state.filters)) if (v !== '') p.set(`f.${k}`, v);
+  for (const k of ['dateField', 'from', 'to']) if (state[k]) p.set(k, state[k]);
+  if (state.sort) { p.set('sort', state.sort); p.set('dir', state.dir); }
+  if (state.limit !== 50) p.set('limit', state.limit);
+  if (state.offset) p.set('offset', state.offset);
+  const hash = `#${state.table}${p.toString() ? `?${p}` : ''}`;
+  if (location.hash !== hash) history.replaceState(null, '', hash);
+}
+
+// ---- Chiffres clés ----
+function renderSummary() {
+  const s = summary;
+  const by = s.todayByStatus || {};
+  const kpi = (lbl, value, sub, alert) => h('div', { class: `kpi${alert ? ' alert' : ''}` },
+    h('div', { class: 'label' }, lbl), h('div', { class: 'value' }, value), sub ? h('div', { class: 'sub' }, sub) : null);
+  const todayDetail = STATUS_FLOW.filter((st) => by[st]).map((st) => `${by[st]} ${label(st).toLowerCase()}`).join(' · ');
+  const failed = s.outbox.failed || 0;
+  $('kpis').replaceChildren(
+    kpi(`Aujourd’hui · ${dayLabel(s.today)}`, s.todayOrders, todayDetail || 'Aucune commande pour le moment'),
+    kpi('Chiffre du jour', euro(s.todayRevenueCents), `hors annulations${by.cancelled ? ` (${by.cancelled} annulée${by.cancelled > 1 ? 's' : ''})` : ''}`),
+    kpi('Commandes à traiter', s.openOrders, 'en attente, confirmées, au four ou prêtes'),
+    kpi('Emails', `${s.outbox.sent || 0} envoyés`, `${s.outbox.queued || 0} en file · ${failed} en échec · transport ${s.transport}`, failed > 0),
+  );
+  $('tabs').replaceChildren(...TABLES.map((t) => h('button', {
+    type: 'button', role: 'tab', 'aria-selected': String(t === state.table),
+    onclick: () => switchTable(t),
+  }, s.tables[t].label, h('span', { class: 'count' }, s.tables[t].count))));
+  $('updated').textContent = `Mis à jour à ${new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+}
+
+// ---- Filtres ----
+function renderToolbar(data) {
+  $('q').value = state.q;
+  $('facets').replaceChildren(...Object.entries(data.facets).map(([name, values]) => h('select', {
+    'aria-label': colLabel(name),
+    onchange: (ev) => { state.filters[name] = ev.target.value; state.offset = 0; load(); },
+  }, h('option', { value: '' }, `${colLabel(name)} : tous`),
+  values.map((v) => h('option', { value: String(v), selected: String(state.filters[name] ?? '') === String(v) },
+    name === 'active' ? (Number(v) ? 'Oui' : 'Non') : label(v))))));
+  $('dates').hidden = !data.dates.length;
+  $('quick').hidden = !data.dates.length;
+  $('dateField').replaceChildren(...data.dates.map((d) => h('option', { value: d, selected: d === data.dateField }, colLabel(d))));
+  $('from').value = state.from;
+  $('to').value = state.to;
+  $('limit').value = String(state.limit);
+}
+
+function applyRange(range) {
+  const today = summary?.today || parisNow().date;
+  const ranges = {
+    today: [today, today], tomorrow: [addDays(today, 1), addDays(today, 1)],
+    week: [today, addDays(today, 6)], past30: [addDays(today, -29), today],
+  };
+  [state.from, state.to] = ranges[range];
+  state.offset = 0;
+  load();
+}
+
+// ---- Table ----
+function cell(col, value, row) {
+  const td = h('td');
+  if (value === null || value === undefined || value === '') { td.append(h('span', { class: 'null' }, '—')); return td; }
+  if (/_cents$/.test(col)) { td.className = 'num'; td.textContent = euro(value); return td; }
+  if (/_at$/.test(col)) { td.className = 'date'; td.textContent = dateTime(value); td.title = value; return td; }
+  if (col === 'pickup_date') { td.className = 'date'; td.textContent = dayLabel(value); td.title = value; return td; }
+  if (col === 'status') { td.append(badge(value)); return td; }
+  if (['actor', 'channel', 'kind'].includes(col)) { td.textContent = label(value); return td; }
+  if (col === 'active') { td.textContent = Number(value) ? 'Oui' : 'Non'; return td; }
+  if (typeof value === 'number') { td.className = 'num'; td.textContent = value.toLocaleString('fr-FR'); return td; }
+  // Liens vers la fiche commande et vers les commandes d'un client.
+  const orderId = col === 'order_id' ? value : (col === 'order_ref' ? row.order_id : (state.table === 'orders' && (col === 'ref' || col === 'id') ? row.id : null));
+  if (orderId) {
+    td.append(h('button', { type: 'button', class: `link${isUuid(value) ? ' mono' : ''}`, title: value,
+      onclick: (ev) => { ev.stopPropagation(); openOrder(orderId); } }, isUuid(value) ? value.slice(0, 8) : value));
+    return td;
+  }
+  if (col === 'client_id' || (state.table === 'clients' && col === 'id')) {
+    td.append(h('button', { type: 'button', class: 'link mono', title: `Voir les commandes de ${value}`,
+      onclick: (ev) => { ev.stopPropagation(); showClientOrders(value); } }, value.slice(0, 8)));
+    return td;
+  }
+  const text = String(value);
+  if (isUuid(text) || col === 'token_hash') { td.append(h('span', { class: 'mono', title: text }, text.slice(0, 12) + (text.length > 12 ? '…' : ''))); return td; }
+  td.append(h('span', { class: 'clip', title: text.length > 40 ? text : null }, text));
+  return td;
+}
+
+function renderTable(data) {
+  const wrap = $('table-wrap');
+  if (!data.rows.length) {
+    wrap.replaceChildren(h('div', { class: 'empty' }, 'Aucune ligne ne correspond à ces filtres.'));
+  } else {
+    const head = h('tr', {}, data.columns.map((c) => h('th', {
+      scope: 'col', title: `Trier par ${colLabel(c)}`,
+      onclick: () => { state.dir = state.sort === c && state.dir === 'desc' ? 'asc' : 'desc'; state.sort = c; state.offset = 0; load(); },
+    }, colLabel(c), state.sort === c ? h('span', { class: 'arrow' }, state.dir === 'asc' ? '▲' : '▼') : null)));
+    const body = data.rows.map((row) => h('tr', {
+      tabindex: '0',
+      onclick: () => openRow(row),
+      onkeydown: (ev) => { if (ev.key === 'Enter') openRow(row); },
+    }, data.columns.map((c) => cell(c, row[c], row))));
+    const scroll = wrap.scrollTop;
+    wrap.replaceChildren(h('table', {}, h('thead', {}, head), h('tbody', {}, body)));
+    wrap.scrollTop = scroll;
+  }
+  const end = Math.min(data.offset + data.rows.length, data.total);
+  $('range').textContent = data.total ? `${data.offset + 1}–${end} sur ${data.total.toLocaleString('fr-FR')}` : '0 ligne';
+  $('prev').disabled = data.offset === 0;
+  $('next').disabled = end >= data.total;
+}
+
+let loadSeq = 0;
+async function load({ quiet = false } = {}) {
+  writeHash();
+  const seq = ++loadSeq;
+  const data = await api(`/api/admin/tables/${state.table}?${queryParams()}`).catch((e) => { handleError(e); return null; });
+  if (!data || seq !== loadSeq) return; // une réponse plus récente est déjà arrivée (ou arrivera)
+  current = data;
+  if (!quiet) renderToolbar(data);
+  renderTable(data);
+}
+
+async function refreshSummary() {
+  summary = await api('/api/admin/summary');
+  renderSummary();
+}
+
+async function refreshAll({ quiet = false } = {}) {
+  try {
+    await refreshSummary();
+    await load({ quiet });
+    if (openOrderId && !$('drawer').hidden) await openOrder(openOrderId, { keepScroll: true });
+  } catch (e) { handleError(e); }
+}
+
+function switchTable(table) {
+  Object.assign(state, { table, q: '', filters: {}, dateField: '', from: '', to: '', sort: '', dir: 'desc', offset: 0 });
+  renderSummary();
+  load();
+}
+function showClientOrders(clientId) {
+  closeDrawer();
+  Object.assign(state, { table: 'orders', q: clientId, filters: {}, dateField: '', from: '', to: '', sort: 'created_at', dir: 'desc', offset: 0 });
+  renderSummary();
+  load();
+}
+
+// ---- Fiche détail ----
+function openDrawer(title, ...content) {
+  $('drawer-title').textContent = title;
+  $('drawer-body').replaceChildren(...content);
+  const wasHidden = $('drawer').hidden;
+  $('overlay').hidden = false;
+  $('drawer').hidden = false;
+  if (wasHidden) $('drawer-close').focus();
+}
+function closeDrawer() {
+  $('overlay').hidden = true;
+  $('drawer').hidden = true;
+  openOrderId = null;
+}
+$('drawer-close').addEventListener('click', closeDrawer);
+$('overlay').addEventListener('click', closeDrawer);
+document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && !$('drawer').hidden) closeDrawer(); });
+
+const kv = (pairs) => h('dl', { class: 'kv' }, pairs.filter(([, v]) => v !== undefined).flatMap(([k, v]) => [h('dt', {}, k), h('dd', {}, v ?? h('span', { class: 'null' }, '—'))]));
+
+function openRow(row) {
+  if (state.table === 'orders') return openOrder(row.id);
+  if (row.order_id && ['order_items', 'order_events'].includes(state.table)) return openOrder(row.order_id);
+  const fields = current.columns.map((c) => {
+    const v = row[c];
+    if (v === null || v === undefined || v === '') return [colLabel(c), null];
+    const td = cell(c, v, row);
+    // Dans la fiche, le texte tronqué du tableau s'affiche en entier.
+    if (td.querySelector('.clip, span.mono')) td.replaceChildren(h('span', { style: 'white-space:pre-wrap', class: td.querySelector('.mono') ? 'mono' : null }, String(v)));
+    return [colLabel(c), h('span', {}, ...td.childNodes)];
+  });
+  const extra = [];
+  if (row.order_id && state.table !== 'orders') {
+    extra.push(h('div', { class: 'actions' }, h('button', { class: 'btn', type: 'button', onclick: () => openOrder(row.order_id) }, 'Ouvrir la commande')));
+  }
+  const clientId = state.table === 'clients' ? row.id : row.client_id;
+  if (clientId) extra.push(h('div', { class: 'actions' }, h('button', { class: 'btn', type: 'button', onclick: () => showClientOrders(clientId) }, 'Voir les commandes de ce client')));
+  openDrawer(`${current.label} · ${row.ref || row.order_ref || row.name || row.id || ''}`, kv(fields), ...extra);
+}
+
+async function openOrder(id, { keepScroll = false } = {}) {
+  let d;
+  try { d = await api(`/api/admin/orders/${encodeURIComponent(id)}`); } catch (e) { return handleError(e); }
+  openOrderId = id;
+  const o = d.order;
+  const scroll = $('drawer').scrollTop;
+
+  const next = STATUS_FLOW.slice(STATUS_FLOW.indexOf(o.status) + 1);
+  const closed = ['collected', 'cancelled'].includes(o.status);
+  const actions = closed ? h('p', { style: 'margin:0;color:var(--muted)' }, 'Commande clôturée.') : h('div', { class: 'actions' },
+    next.map((s) => h('button', { class: `btn${s === next[0] ? ' btn-primary' : ''}`, type: 'button', onclick: () => changeStatus(o, s) }, `→ ${label(s)}`)),
+    h('button', { class: 'btn btn-danger', type: 'button', onclick: () => changeStatus(o, 'cancelled') }, 'Annuler la commande'));
+
+  const email = o.customer.email;
+  const phone = o.customer.phone;
+  const sections = [
+    h('div', {}, h('h3', {}, 'Statut'), h('div', { style: 'display:flex;gap:.6rem;align-items:center;margin-bottom:.6rem' }, badge(o.status),
+      h('span', { style: 'color:var(--muted)' }, `Retrait ${dayLabel(o.pickup.date)} à ${o.pickup.slot}`)), actions),
+    h('div', {}, h('h3', {}, 'Client'), kv([
+      ['Nom', o.customer.name],
+      ['Email', email ? h('a', { href: `mailto:${email}` }, email) : null],
+      ['Téléphone', phone ? h('a', { href: `tel:${phone.replace(/[^0-9+]/g, '')}` }, phone) : null],
+      ['Commandes', d.client ? h('button', { class: 'link', type: 'button', onclick: () => showClientOrders(d.client.id) },
+        `${d.client.order_count} au total — voir l’historique`) : null],
+      ['Client depuis', d.client ? dateTime(d.client.created_at) : null],
+    ])),
+    o.notes ? h('div', {}, h('h3', {}, 'Notes du client'), h('div', { class: 'note' }, o.notes)) : null,
+    h('div', {}, h('h3', {}, 'Contenu'), h('table', { class: 'lines' },
+      h('thead', {}, h('tr', {}, h('th', {}, 'Plat'), h('th', { class: 'num' }, 'Qté'), h('th', { class: 'num' }, 'P.U.'), h('th', { class: 'num' }, 'Total'))),
+      h('tbody', {}, o.items.map((i) => h('tr', {}, h('td', {}, i.name), h('td', { class: 'num' }, i.quantity),
+        h('td', { class: 'num' }, euro(i.unitPriceCents)), h('td', { class: 'num' }, euro(i.lineTotalCents))))),
+      h('tfoot', {}, h('tr', {}, h('td', { colspan: '3' }, 'Total (paiement au retrait)'), h('td', { class: 'num' }, euro(o.totalCents)))))),
+    h('div', {}, h('h3', {}, 'Historique'), h('ul', { class: 'timeline' }, d.events.map((e) => h('li', {},
+      h('time', { datetime: e.createdAt }, dateTime(e.createdAt)),
+      h('span', {}, badge(e.status), ` par ${label(e.actor).toLowerCase()}`, e.note ? ` — ${e.note}` : ''))))),
+    h('div', {}, h('h3', {}, 'Notifications'), d.notifications.length ? h('ul', { class: 'timeline' }, d.notifications.map((n) => h('li', {},
+      h('time', { datetime: n.createdAt }, dateTime(n.createdAt)),
+      h('span', {}, `${label(n.channel)} · ${label(n.kind)} `, badge(n.status),
+        n.recipient ? ` → ${n.recipient}` : '', n.lastError ? h('div', { class: 'null' }, `Erreur (${n.attempts} essai·s) : ${n.lastError}`) : null)))) : h('p', { class: 'null' }, 'Aucune.')),
+    h('div', {}, h('h3', {}, 'Informations techniques'), kv([
+      ['ID commande', h('span', { class: 'mono' }, o.id)],
+      ['ID client', h('span', { class: 'mono' }, o.clientId)],
+      ['Créée le', dateTime(o.createdAt)],
+      ['Modifiée le', dateTime(o.updatedAt)],
+      ['Motif d’annulation', o.cancelReason || undefined],
+    ])),
+  ];
+  openDrawer(`Commande ${o.ref}`, ...sections.filter(Boolean));
+  if (keepScroll) $('drawer').scrollTop = scroll;
+}
+
+async function changeStatus(order, status) {
+  const who = source.mode === 'live' ? ' Le client sera prévenu.' : ' (Démo/export : rien n’est envoyé.)';
+  let note;
+  if (status === 'cancelled') {
+    note = prompt(`Annuler la commande ${order.ref} ?${who}\nMotif (facultatif, visible dans l’historique) :`, '');
+    if (note === null) return;
+  } else if (!confirm(`Passer la commande ${order.ref} en « ${label(status)} » ?${who}`)) return;
+  try {
+    await api(`/api/admin/orders/${encodeURIComponent(order.id)}`, { method: 'PATCH', body: JSON.stringify({ status, note: note || undefined }) });
+    toast(`Commande ${order.ref} : ${label(status)}.`);
+    await refreshAll({ quiet: true });
+  } catch (e) { handleError(e); }
+}
+
+// ---- Export CSV (toutes les lignes filtrées, séparateur « ; » pour Excel FR) ----
+async function exportCsv() {
+  const btn = $('csv');
+  btn.disabled = true;
+  try {
+    let rows = []; let total = Infinity; let columns = [];
+    while (rows.length < total) {
+      const page = await api(`/api/admin/tables/${state.table}?${queryParams({ limit: 500, offset: rows.length })}`);
+      columns = page.columns; total = page.total; rows = rows.concat(page.rows);
+      if (!page.rows.length) break;
+    }
+    const esc = (v) => (v === null || v === undefined ? '' : /[";\n\r]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v));
+    const csv = '﻿' + [columns.join(';'), ...rows.map((r) => columns.map((c) => esc(r[c])).join(';'))].join('\r\n');
+    download(`otto-${state.table}-${summary.today}.csv`, csv, 'text/csv;charset=utf-8');
+  } catch (e) { handleError(e); } finally { btn.disabled = false; }
+}
+
+// ---- Branchements ----
+let searchTimer;
+$('q').addEventListener('input', (ev) => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => { state.q = ev.target.value.trim(); state.offset = 0; load(); }, 250);
+});
+$('dateField').addEventListener('change', (ev) => { state.dateField = ev.target.value; state.offset = 0; load(); });
+$('from').addEventListener('change', (ev) => { state.from = ev.target.value; state.offset = 0; load(); });
+$('to').addEventListener('change', (ev) => { state.to = ev.target.value; state.offset = 0; load(); });
+$('quick').addEventListener('click', (ev) => { const r = ev.target.closest('[data-range]'); if (r) applyRange(r.dataset.range); });
+$('reset').addEventListener('click', () => switchTable(state.table));
+$('limit').addEventListener('change', (ev) => { state.limit = Number(ev.target.value); state.offset = 0; load(); });
+$('prev').addEventListener('click', () => { state.offset = Math.max(0, state.offset - state.limit); load(); });
+$('next').addEventListener('click', () => { state.offset += state.limit; load(); });
+$('csv').addEventListener('click', exportCsv);
+$('refresh').addEventListener('click', () => refreshAll({ quiet: true }));
+$('auto').addEventListener('change', (ev) => (ev.target.checked ? startAuto() : stopAuto()));
+window.addEventListener('hashchange', () => { readHash(); if (summary && source.mode) { renderSummary(); load(); } });
+
+function startAuto() {
+  stopAuto();
+  timer = setInterval(() => { if (!document.hidden) refreshAll({ quiet: true }); }, AUTO_MS);
+}
+function stopAuto() { clearInterval(timer); timer = null; }
+
+// Démarrage : servi par le serveur → données réelles (code demandé) ;
+// ouvert en double-clic → démo tout de suite, sauf si un accès au serveur a été mémorisé.
+if (getToken()) startLive();
+else if (IS_FILE) startDemo();
+else showLogin();
+</script>
+</body>
+</html>

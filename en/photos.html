@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Photos — Otto, Paris 13th</title>
+<meta name="description" content="Neapolitan pizzas, plates, dining room and terrace: the Otto photo gallery, boulevard Arago, Paris 13th.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Cormorant+Garamond:ital@1&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="index.html" class="nav-logo" aria-label="Otto — home">
+      <img class="nav-logo-img" src="../assets/img/otto-logo.png" alt="Otto Pizza" width="44" height="44">
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="la-carte.html">Menu</a></li>
+      <li><a href="reservation.html">Book a table</a></li>
+      <li><a href="commander.html">Order takeout</a></li>
+      <li><a href="photos.html" aria-current="page">Photos</a></li>
+      <li><a href="contact.html">Access &amp; Contact</a></li>
+      <li><a href="about.html">About</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="lang-toggle">
+        <a href="../photos.html">FR</a>
+        <a href="photos.html" aria-current="true">EN</a>
+      </div>
+      <button class="nav-toggle" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+  <div class="nav-mobile-panel">
+    <a href="index.html">Home</a>
+    <a href="la-carte.html">Menu</a>
+    <a href="reservation.html">Book a table</a>
+    <a href="commander.html">Order takeout</a>
+    <a href="photos.html">Photos</a>
+    <a href="contact.html">Access &amp; Contact</a>
+    <a href="about.html">About</a>
+  </div>
+</nav>
+
+<section>
+  <div class="container">
+    <p class="eyebrow">Gallery</p>
+    <h1>Photos &amp; Ambiance</h1>
+    <p class="gallery-intro">Our pizzas, our plates, the dining room, the terrace and the people keeping the oven going — Otto, as it actually is.</p>
+    <!-- 33 HD photos (1400×840, largest size served), pulled 2026-09-30 from ottoparis13.fr/photos/
+         ("Photos plats Otto" album), stored in assets/img/photos/ with descriptive names. -->
+    <div class="gallery-filters" role="group" aria-label="Filter photos">
+      <button type="button" class="gallery-filter" data-filter="all" aria-pressed="true">All <span>33</span></button>
+      <button type="button" class="gallery-filter" data-filter="pizzas" aria-pressed="false">Pizzas <span>12</span></button>
+      <button type="button" class="gallery-filter" data-filter="assiettes" aria-pressed="false">Plates &amp; desserts <span>7</span></button>
+      <button type="button" class="gallery-filter" data-filter="lieu" aria-pressed="false">The place <span>8</span></button>
+      <button type="button" class="gallery-filter" data-filter="equipe" aria-pressed="false">The team <span>6</span></button>
+    </div>
+    <div class="gallery-grid">
+      <figure class="gallery-item is-wide" data-cat="pizzas"><a href="../assets/img/photos/pizzas-assortiment-vue-dessus.jpg" aria-label="Enlarge: Assortment of Otto pizzas from above"><img src="../assets/img/photos/pizzas-assortiment-vue-dessus.jpg" alt="Assortment of Otto pizzas from above" width="1400" height="840" decoding="async"></a></figure>
+      <figure class="gallery-item is-tall" data-cat="lieu"><a href="../assets/img/photos/salle-table-dressee.jpg" aria-label="Enlarge: Table set in the dining room, pizzas served"><img src="../assets/img/photos/salle-table-dressee.jpg" alt="Table set in the dining room, pizzas served" width="1400" height="840" decoding="async"></a></figure>
+      <figure class="gallery-item" data-cat="pizzas"><a href="../assets/img/photos/pizza-tomate-burrata-basilic.jpg" aria-label="Enlarge: Tomato, burrata and basil pizza"><img src="../assets/img/photos/pizza-tomate-burrata-basilic.jpg" alt="Tomato, burrata and basil pizza" width="1400" height="840" decoding="async"></a></figure>
+      <figure class="gallery-item" data-cat="pizzas"><a href="../assets/img/photos/pizza-jambon-champignons-olives.jpg" aria-label="Enlarge: Ham, mushroom and olive pizza"><img src="../assets/img/photos/pizza-jambon-champignons-olives.jpg" alt="Ham, mushroom and olive pizza" width="1400" height="840" decoding="async"></a></figure>
+      <figure class="gallery-item is-wide" data-cat="lieu"><a href="../assets/img/photos/facade-terrasse.jpg" aria-label="Enlarge: Otto's façade and terrace on boulevard Arago"><img src="../assets/img/photos/facade-terrasse.jpg" alt="Otto's façade and terrace on boulevard Arago" width="1400" height="840" decoding="async"></a></figure>
+      <figure class="gallery-item is-tall" data-cat="equipe"><a href="../assets/img/photos/pizzaiolo-enfournement.jpg" aria-label="Enlarge: The pizzaiolo sliding a pizza into the oven"><img src="../assets/img/photos/pizzaiolo-enfournement.jpg" alt="The pizzaiolo sliding a pizza into the oven" width="1400" height="840" decoding="async"></a></figure>
+      <figure class="gallery-item" data-cat="assiettes"><a href="../assets/img/photos/tiramisu.jpg" aria-label="Enlarge: Homemade tiramisu"><img src="../assets/img/photos/tiramisu.jpg" alt="Homemade tiramisu" width="1400" height="840" loading="lazy" decoding="async"></a></figure>
+      <figure class="gallery-item" data-cat="pizzas"><a href="../assets/img/photos/pizza-blanche-anchois-poivrons.jpg" aria-label="Enlarge: White pizza with anchovies and peppers"><img src="../assets/img/photos/pizza-blanche-anchois-poivrons.jpg" alt="White pizza with anchovies and peppers" width="1400" height="840" loading="lazy" decoding="async"></a></figure>
+      <figure class="gallery-item is-wide" data-cat="assiettes"><a href="../assets/img/photos/tablee-antipasti-desserts.jpg" aria-label="Enlarge: Antipasti, salads and desserts to share"><img src="../assets/img/photos/tablee-antipasti-desserts.jpg" alt="Antipasti, salads and desserts to share" width="1400" height="840" loading="lazy" decoding="async"></a></figure>
+      <figure class="gallery-item" data-cat="pizzas"><a href="../assets/img/photos/pizza-jambon-cru-roquette-burrata.jpg" aria-label="Enlarge: Prosciutto, rocket and burrata pizza"><img src="../assets/img/photos/pizza-jambon-cru-roquette-burrata.jpg" alt="Prosciutto, rocket and burrata pizza" width="1400" height="840" loading="lazy" decoding="async"></a></figure>
+      <figure class="gallery-item" data-cat="equipe"><a href="../assets/img/photos/chef-sourire.jpg" aria-label="Enlarge: The chef behind the counter"><img src="../assets/img/photos/chef-sourire.jpg" alt="The chef behind the counter" width="1400" height="840" loading="lazy" decoding="async"></a></figure>
+      <figure class="gallery-item" data-cat="pizzas"><a href="../assets/img/photos/pizza-legumes-grilles-olives.jpg" aria-label="Enlarge: Grilled vegetable and olive pizza"><img src="../assets/img/photos/pizza-legumes-grilles-olives.jpg" alt="Grilled vegetable and olive pizza" width="1400" height="840" loading="lazy" decoding="async"></a></figure>
+      <figure class="gallery-item is-tall" data-cat="lieu"><a href="../assets/img/photos/cave-a-vins.jpg" aria-label="Enlarge: Selection of Italian wines"><img src="../assets/img/photos/cave-a-vins.jpg" alt="Selection of Italian wines" width="1400" height="840" loading="lazy" decoding="async"></a></figure>
+      <figure class="gallery-item" data-cat="assiettes"><a href="../assets/img/photos/planche-antipasti-burrata.jpg" aria-label="Enlarge: Antipasti board with burrata"><img src="../assets/img/photos/planche-antipasti-burrata.jpg" alt="Antipasti board with burrata" width="1400" height="840" loading="lazy" decoding="async"></a></figure>
+      <figure class="gallery-item" data-cat="pizzas"><a href="../assets/img/photos/pizza-rossa-piquante.jpg" aria-label="Enlarge: Rossa pizza with mozzarella and spicy salami"><img src="../assets/img/photos/pizza-rossa-piquante.jpg" alt="Rossa pizza with mozzarella and spicy salami" width="1400" height="840" loading="lazy" decoding="async"></a></figure>
+      <figure class="gallery-item is-wide" data-cat="lieu"><a href="../assets/img/photos/four-enfournement.jpg" aria-label="Enlarge: Pizza going into the Morello Forni oven"><img src="../assets/img/photos/four-enfournement.jpg" alt="Pizza going into the Morello Forni oven" width="1400" height="840" loading="lazy" decoding="async"></a></figure>
+      <figure class="gallery-item" data-cat="pizzas"><a href="../assets/img/photos/pizza-blanche-gorgonzola.jpg" aria-label="Enlarge: White pizza with gorgonzola"><img src="../assets/img/photos/pizza-blanche-gorgonzola.jpg" alt="White pizza with gorgonzola" width="1400" height="840" loading="lazy" decoding="async"></a></figure>
+      <figure class="gallery-item" data-cat="assiettes"><a href="../assets/img/photos/panna-cotta-fruits-rouges.jpg" aria-label="Enlarge: Panna cotta with red berry coulis and pistachios"><img src="../assets/img/photos/panna-cotta-fruits-rouges.jpg" alt="Panna cotta with red berry coulis and pistachios" width="1400" height="840" loading="lazy" decoding="async"></a></figure>
+      <figure class="gallery-item" data-cat="equipe"><a href="../assets/img/photos/pizzaiolo-four.jpg" aria-label="Enlarge: Pizza baking, watched by the pizzaiolo"><img src="../assets/img/photos/pizzaiolo-four.jpg" alt="Pizza baking, watched by the pizzaiolo" width="1400" height="840" loading="lazy" decoding="async"></a></figure>
+      <figure class="gallery-item" data-cat="pizzas"><a href="../assets/img/photos/pizza-jambon-artichauts-olives.jpg" aria-label="Enlarge: Ham, artichoke and olive pizza"><img src="../assets/img/photos/pizza-jambon-artichauts-olives.jpg" alt="Ham, artichoke and olive pizza" width="1400" height="840" loading="lazy" decoding="async"></a></figure>
+      <figure class="gallery-item" data-cat="lieu"><a href="../assets/img/photos/salle-table-fenetre.jpg" aria-label="Enlarge: Table for two by the window"><img src="../assets/img/photos/salle-table-fenetre.jpg" alt="Table for two by the window" width="1400" height="840" loading="lazy" decoding="async"></a></figure>
+      <figure class="gallery-item is-tall" data-cat="assiettes"><a href="../assets/img/photos/salade-burrata.jpg" aria-label="Enlarge: Mixed salad with burrata"><img src="../assets/img/photos/salade-burrata.jpg" alt="Mixed salad with burrata" width="1400" height="840" loading="lazy" decoding="async"></a></figure>
+      <figure class="gallery-item" data-cat="pizzas"><a href="../assets/img/photos/pizza-blanche-jambon-champignons.jpg" aria-label="Enlarge: White pizza with ham and mushrooms"><img src="../assets/img/photos/pizza-blanche-jambon-champignons.jpg" alt="White pizza with ham and mushrooms" width="1400" height="840" loading="lazy" decoding="async"></a></figure>
+      <figure class="gallery-item" data-cat="lieu"><a href="../assets/img/photos/aperitivo-spritz.jpg" aria-label="Enlarge: Aperitivo: Aperol, prosecco and Perrier"><img src="../assets/img/photos/aperitivo-spritz.jpg" alt="Aperitivo: Aperol, prosecco and Perrier" width="1400" height="840" loading="lazy" decoding="async"></a></figure>
+      <figure class="gallery-item is-wide" data-cat="equipe"><a href="../assets/img/photos/comptoir-pizzaiolos.jpg" aria-label="Enlarge: The pizzaiolos at the counter"><img src="../assets/img/photos/comptoir-pizzaiolos.jpg" alt="The pizzaiolos at the counter" width="1400" height="840" loading="lazy" decoding="async"></a></figure>
+      <figure class="gallery-item" data-cat="pizzas"><a href="../assets/img/photos/pizza-blanche-fromages.jpg" aria-label="Enlarge: White cheese pizza"><img src="../assets/img/photos/pizza-blanche-fromages.jpg" alt="White cheese pizza" width="1400" height="840" loading="lazy" decoding="async"></a></figure>
+      <figure class="gallery-item" data-cat="assiettes"><a href="../assets/img/photos/desserts-tiramisu-panna-cotta.jpg" aria-label="Enlarge: Tiramisu and panna cotta"><img src="../assets/img/photos/desserts-tiramisu-panna-cotta.jpg" alt="Tiramisu and panna cotta" width="1400" height="840" loading="lazy" decoding="async"></a></figure>
+      <figure class="gallery-item" data-cat="lieu"><a href="../assets/img/photos/tireuse-biere.jpg" aria-label="Enlarge: Paris Blonde beer taps"><img src="../assets/img/photos/tireuse-biere.jpg" alt="Paris Blonde beer taps" width="1400" height="840" loading="lazy" decoding="async"></a></figure>
+      <figure class="gallery-item" data-cat="equipe"><a href="../assets/img/photos/pizzaiolo-sortie-four.jpg" aria-label="Enlarge: Pizza fresh out of the oven"><img src="../assets/img/photos/pizzaiolo-sortie-four.jpg" alt="Pizza fresh out of the oven" width="1400" height="840" loading="lazy" decoding="async"></a></figure>
+      <figure class="gallery-item is-wide" data-cat="pizzas"><a href="../assets/img/photos/pizzas-gros-plan.jpg" aria-label="Enlarge: Otto pizzas, close up"><img src="../assets/img/photos/pizzas-gros-plan.jpg" alt="Otto pizzas, close up" width="1400" height="840" loading="lazy" decoding="async"></a></figure>
+      <figure class="gallery-item" data-cat="assiettes"><a href="../assets/img/photos/assiette-creme-champignons.jpg" aria-label="Enlarge: Creamy mushroom plate"><img src="../assets/img/photos/assiette-creme-champignons.jpg" alt="Creamy mushroom plate" width="1400" height="840" loading="lazy" decoding="async"></a></figure>
+      <figure class="gallery-item" data-cat="equipe"><a href="../assets/img/photos/chef-comptoir.jpg" aria-label="Enlarge: The chef at the beer taps"><img src="../assets/img/photos/chef-comptoir.jpg" alt="The chef at the beer taps" width="1400" height="840" loading="lazy" decoding="async"></a></figure>
+      <figure class="gallery-item" data-cat="lieu"><a href="../assets/img/photos/vente-a-emporter.jpg" aria-label="Enlarge: Takeaway"><img src="../assets/img/photos/vente-a-emporter.jpg" alt="Takeaway" width="1400" height="840" loading="lazy" decoding="async"></a></figure>
+    </div>
+  </div>
+</section>
+
+<dialog class="lightbox" aria-label="Enlarged photo">
+  <button type="button" class="lightbox-close" aria-label="Close">&times;</button>
+  <button type="button" class="lightbox-nav lightbox-prev" aria-label="Previous photo">&lsaquo;</button>
+  <figure>
+    <img src="" alt="">
+    <figcaption></figcaption>
+  </figure>
+  <button type="button" class="lightbox-nav lightbox-next" aria-label="Next photo">&rsaquo;</button>
+</dialog>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <p><strong>Otto</strong></p>
+        <p>53 bis Bd Arago, 75013 Paris</p>
+        <p><a href="tel:+33987140850">09 87 14 08 50</a></p>
+      </div>
+      <div>
+        <p><a href="index.html">Home</a></p>
+        <p><a href="la-carte.html">Menu</a></p>
+        <p><a href="photos.html">Photos</a></p>
+        <p><a href="reservation.html">Book</a></p>
+        <p><a href="commander.html">Takeout</a></p>
+        <p><a href="contact.html">Access &amp; Contact</a></p>
+        <p><a href="about.html">About</a></p>
+      </div>
+      <div>
+        <p><a href="https://www.instagram.com/ottopizza75013/" target="_blank" rel="noopener">Instagram</a></p>
+        <p><a href="https://www.facebook.com/otto.paris13/" target="_blank" rel="noopener">Facebook</a></p>
+        <div class="lang-toggle" style="margin-top:1rem;">
+          <a href="../photos.html">FR</a>
+          <a href="photos.html" aria-current="true">EN</a>
+        </div>
+      </div>
+    </div>
+    <p class="footer-copyright">© Otto — Paris</p>
+  </div>
+</footer>
+
+<script src="../assets/js/main.js"></script>
+<script src="../assets/js/gallery.js"></script>
+</body>
+</html>

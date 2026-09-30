@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Réservation — Otto, Paris 13e</title>
+<meta name="description" content="Réservez une table chez Otto, 53 bis Bd Arago, Paris 13e.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;900&family=Cormorant+Garamond:ital@1&family=Inter:wght@400;500&family=Dosis:wght@800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="index.html" class="nav-logo" aria-label="Otto — accueil">
+      <img class="nav-logo-img" src="assets/img/otto-logo.png" alt="Otto Pizza" width="44" height="44">
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="la-carte.html">La Carte</a></li>
+      <li><a href="reservation.html" aria-current="page">Réserver une table</a></li>
+      <li><a href="commander.html">Commander à emporter</a></li>
+      <li><a href="photos.html">Photos</a></li>
+      <li><a href="contact.html">Accès &amp; Contact</a></li>
+      <li><a href="about.html">À propos</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="lang-toggle">
+        <a href="index.html" aria-current="true">FR</a>
+        <a href="en/reservation.html">EN</a>
+      </div>
+      <button class="nav-toggle" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+  <div class="nav-mobile-panel">
+    <a href="index.html">Accueil</a>
+    <a href="la-carte.html">La Carte</a>
+    <a href="reservation.html">Réserver une table</a>
+    <a href="commander.html">Commander à emporter</a>
+    <a href="photos.html">Photos</a>
+    <a href="contact.html">Accès &amp; Contact</a>
+    <a href="about.html">À propos</a>
+  </div>
+</nav>
+
+<main class="resa">
+  <img class="resa-olivier motif" src="assets/img/motif-olivier.svg" alt="" aria-hidden="true" width="260" height="230">
+  <div class="container">
+    <header class="resa-head">
+      <p class="eyebrow">Prenotazione · 53 bis Bd Arago</p>
+      <h1>Réserver une table</h1>
+      <p class="quote resa-lede">Une nappe, une pizza au feu de bois, et la soirée est à vous.</p>
+    </header>
+
+    <div class="resa-grid">
+      <!-- Colonne gauche : l'expérience de réservation.
+           Front-end seul pour l'instant — à brancher sur Zenchef (ou équivalent)
+           une fois le contrat finalisé (docs/01 §9). -->
+      <form class="resa-card" id="resa-form" novalidate>
+
+        <div class="resa-step">
+          <div class="resa-step-head">
+            <span class="resa-step-num">01</span>
+            <h2 class="resa-step-title">Quel jour ?</h2>
+          </div>
+          <div class="resa-days" id="resa-days" role="radiogroup" aria-label="Date"></div>
+          <label class="resa-other-date">
+            <span>Une autre date</span>
+            <input type="date" id="resa-date-input" name="date">
+          </label>
+        </div>
+
+        <div class="resa-step">
+          <div class="resa-step-head">
+            <span class="resa-step-num">02</span>
+            <h2 class="resa-step-title">Combien serez-vous ?</h2>
+          </div>
+          <div class="resa-counter">
+            <button type="button" class="resa-counter-btn" data-step="-1" aria-label="Retirer une personne">−</button>
+            <output id="resa-guests" aria-live="polite"><strong>2</strong> personnes</output>
+            <button type="button" class="resa-counter-btn" data-step="1" aria-label="Ajouter une personne">+</button>
+          </div>
+          <p class="resa-hint" id="resa-guests-hint" hidden>Plus de 6 ? <a href="tel:+33987140850">Appelez-nous</a> — on vous prépare une grande tablée.</p>
+        </div>
+
+        <div class="resa-step">
+          <div class="resa-step-head">
+            <span class="resa-step-num">03</span>
+            <h2 class="resa-step-title" id="resa-time-title">À quelle heure ?</h2>
+          </div>
+          <div class="resa-slots" role="radiogroup" aria-labelledby="resa-time-title">
+            <div class="resa-slot-group">
+              <p class="resa-slot-label">Déjeuner</p>
+              <div class="resa-slot-row">
+                <label class="resa-slot"><input type="radio" name="time" value="12:00"><span>12:00</span></label>
+                <label class="resa-slot"><input type="radio" name="time" value="12:30"><span>12:30</span></label>
+                <label class="resa-slot"><input type="radio" name="time" value="13:00"><span>13:00</span></label>
+                <label class="resa-slot"><input type="radio" name="time" value="13:30"><span>13:30</span></label>
+              </div>
+            </div>
+            <div class="resa-slot-group">
+              <p class="resa-slot-label">Dîner</p>
+              <div class="resa-slot-row">
+                <label class="resa-slot"><input type="radio" name="time" value="19:30"><span>19:30</span></label>
+                <label class="resa-slot"><input type="radio" name="time" value="20:00"><span>20:00</span></label>
+                <label class="resa-slot"><input type="radio" name="time" value="20:30"><span>20:30</span></label>
+                <label class="resa-slot"><input type="radio" name="time" value="21:00"><span>21:00</span></label>
+                <label class="resa-slot"><input type="radio" name="time" value="21:30"><span>21:30</span></label>
+              </div>
+            </div>
+          </div>
+          <p class="resa-error" data-error-for="time" hidden>Choisissez un créneau.</p>
+        </div>
+
+        <div class="resa-step">
+          <div class="resa-step-head">
+            <span class="resa-step-num">04</span>
+            <h2 class="resa-step-title">Vos coordonnées</h2>
+          </div>
+          <div class="resa-fields">
+            <label class="resa-field resa-field-full">
+              <span>Nom</span>
+              <input type="text" name="name" autocomplete="name" required placeholder="Giulia Rossi">
+            </label>
+            <label class="resa-field">
+              <span>Email</span>
+              <input type="email" name="email" autocomplete="email" required placeholder="giulia@exemple.fr">
+            </label>
+            <label class="resa-field">
+              <span>Téléphone</span>
+              <input type="tel" name="phone" autocomplete="tel" required placeholder="06 12 34 56 78" pattern="[0-9+ .\(\)\-]{8,}">
+            </label>
+            <label class="resa-field resa-field-full">
+              <span>Allergies, régime, occasion spéciale <em>(facultatif)</em></span>
+              <textarea name="notes" rows="3" placeholder="Sans gluten, poussette, anniversaire…"></textarea>
+            </label>
+          </div>
+        </div>
+
+        <button type="submit" class="resa-cta">
+          <span class="resa-cta-label" id="resa-cta-label">Confirmer ma réservation</span>
+          <span class="resa-cta-summary" id="resa-summary">Choisissez un créneau</span>
+        </button>
+        <p class="resa-fineprint">Confirmation immédiate par email. Annulation gratuite jusqu'à 2 h avant.</p>
+      </form>
+
+      <!-- Colonne droite : l'ambiance et les infos pratiques -->
+      <aside class="resa-aside">
+        <figure class="resa-photo">
+          <img src="assets/img/resa-facade-terrasse.jpg" alt="La façade d'Otto sur le boulevard Arago : la véranda vitrée éclairée, l'enseigne OTTO Pizza et la terrasse sous les arbres" width="1400" height="840">
+          <figcaption>
+            <span class="resa-photo-kicker">La terrasse, boulevard Arago</span>
+            <span class="resa-photo-quote">« Comme à la trattoria du coin, en plein 13e. »</span>
+          </figcaption>
+        </figure>
+
+        <div class="resa-info">
+          <h2 class="resa-info-title">Infos pratiques</h2>
+          <dl class="resa-info-list">
+            <div>
+              <dt>Adresse</dt>
+              <dd><a href="https://maps.google.com/?q=53+bis+Bd+Arago+75013+Paris" target="_blank" rel="noopener">53 bis Bd Arago, 75013 Paris</a></dd>
+            </div>
+            <div>
+              <dt>Téléphone</dt>
+              <dd><a class="resa-phone" href="tel:+33987140850">09 87 14 08 50</a></dd>
+            </div>
+            <div>
+              <dt>Horaires</dt>
+              <dd>
+                <span class="resa-hours"><span>Déjeuner</span><span>12h00 – 14h15</span></span>
+                <span class="resa-hours"><span>Dîner</span><span>18h30 – 22h15</span></span>
+                <span class="resa-hours-note">7 jours sur 7</span>
+              </dd>
+            </div>
+          </dl>
+
+          <div class="resa-group">
+            <span class="resa-group-badge" aria-hidden="true">6+</span>
+            <div>
+              <p><strong>Groupes de plus de 6 personnes ?</strong> Appelez-nous directement pour privatiser ou réserver une grande table conviviale.</p>
+              <a class="resa-group-link" href="tel:+33987140850">Appeler le restaurant →</a>
+            </div>
+          </div>
+
+          <a class="resa-crosslink" href="commander.html">
+            <span><strong>Plutôt à la maison ?</strong> Commandez vos pizzas à emporter, prêtes à l'heure dite.</span>
+            <span class="resa-crosslink-cta">Commander à emporter →</span>
+          </a>
+
+          <p class="resa-policy">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span>Tables réservées maintenues 15 min — au-delà, elle peut être proposée à d'autres convives.</span>
+          </p>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="resa-toast" id="resa-toast" hidden>
+    <div class="resa-toast-card" role="dialog" aria-modal="true" aria-labelledby="resa-toast-title">
+      <span class="resa-toast-seal" aria-hidden="true">✓</span>
+      <p class="eyebrow">Grazie mille !</p>
+      <h2 class="resa-toast-title" id="resa-toast-title">C'est noté.</h2>
+      <p class="resa-toast-body" id="resa-toast-body"></p>
+      <button type="button" class="btn resa-toast-close" id="resa-toast-close">Parfait, à bientôt</button>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <p><strong>Otto</strong></p>
+        <p>53 bis Bd Arago, 75013 Paris</p>
+        <p><a href="tel:+33987140850">09 87 14 08 50</a></p>
+      </div>
+      <div>
+        <p><a href="index.html">Accueil</a></p>
+        <p><a href="la-carte.html">La Carte</a></p>
+        <p><a href="photos.html">Photos</a></p>
+        <p><a href="reservation.html">Réservation</a></p>
+        <p><a href="commander.html">À emporter</a></p>
+        <p><a href="contact.html">Accès &amp; Contact</a></p>
+        <p><a href="about.html">À propos</a></p>
+      </div>
+      <div>
+        <p><a href="https://www.instagram.com/ottopizza75013/" target="_blank" rel="noopener">Instagram</a></p>
+        <p><a href="https://www.facebook.com/otto.paris13/" target="_blank" rel="noopener">Facebook</a></p>
+        <div class="lang-toggle" style="margin-top:1rem;">
+          <a href="index.html" aria-current="true">FR</a>
+          <a href="en/reservation.html">EN</a>
+        </div>
+      </div>
+    </div>
+    <p class="footer-copyright">© Otto — Paris</p>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+<script src="assets/js/reservation.js"></script>
+</body>
+</html>
