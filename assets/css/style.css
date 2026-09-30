@@ -296,6 +296,9 @@ html.is-revealing { overflow: hidden; }
 
 .hero {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
   background: var(--ink);
   min-height: 100vh;
 }
@@ -336,6 +339,93 @@ html.is-revealing { overflow: hidden; }
   );
 }
 
+/* Bandeau d'infos en tête de photo, sous la nav : « Pizzeria / adresse /
+   réseaux ». Lettrage fin en capitales espacées façon enseigne, sur un voile
+   encre flouté pour rester lisible devant les braises du four. */
+.hero-infobar {
+  position: absolute;
+  z-index: 3;
+  top: clamp(1rem, 2.5vw, 1.75rem);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  column-gap: clamp(0.6rem, 1.4vw, 1rem);
+  row-gap: 0.35rem;
+  width: max-content;
+  max-width: calc(100% - 2 * var(--gutter));
+  padding: 0.6em 1.4em;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: clamp(0.7rem, 0.25vw + 0.64rem, 0.82rem);
+  line-height: 1.3;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cream);
+  background: rgba(var(--ink-rgb), 0.38);
+  border: 1px solid rgba(var(--cream-rgb), 0.22);
+  border-radius: 999px;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  animation: hero-fade-in 0.9s var(--ease-out) 0.75s forwards;
+}
+.hero-infobar-item { white-space: nowrap; }
+.hero-infobar-address {
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+.hero-infobar-address:hover { color: var(--logo-green); }
+.hero-infobar-sep {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--logo-green);
+}
+.hero-infobar-social {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.hero-infobar-social a {
+  display: inline-flex;
+  padding: 0.15rem;
+  color: var(--cream);
+  border-radius: var(--radius);
+  transition: color 0.2s ease, transform 0.2s var(--ease-out);
+}
+.hero-infobar-social a:hover { color: var(--logo-green); transform: translateY(-1px); }
+.hero-infobar a:focus-visible { outline: 2px solid var(--cream); outline-offset: 3px; }
+.hero-infobar-social svg {
+  width: 1.45em;
+  height: 1.45em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.hero-infobar-social .hero-infobar-dot { fill: currentColor; stroke: none; }
+
+/* Mobile : l'adresse passe seule sur la ligne du bas, le bandeau s'arrondit
+   en cartouche plutôt que de déborder. */
+@media (max-width: 559px) {
+  .hero-infobar {
+    letter-spacing: 0.1em;
+    border-radius: var(--radius-lg);
+    padding: 0.6em 1.1em;
+  }
+  .hero-infobar {
+    display: grid;
+    grid-template-columns: 1fr repeat(3, auto) 1fr;  /* l'excédent de largeur va aux marges, pas entre les items */
+  }
+  .hero-infobar > :first-child { grid-column: 2; }
+  .hero-infobar-address { grid-column: 1 / -1; grid-row: 2; text-align: center; }
+  .hero-infobar-address + .hero-infobar-sep { display: none; }
+}
+
 /* Transition sculptée bas de hero → piliers : une courbe organique taillée dans
    le crème, avec ombre portée pour un relief tactile — sans filet de contour.
    Reste sous le titre/sous-titre/CTA (z-index 2). */
@@ -358,12 +448,12 @@ html.is-revealing { overflow: hidden; }
   filter: drop-shadow(0 -10px 16px rgba(var(--ink-rgb), 0.3));
 }
 
+/* Dans le flux (bas de colonne flex) : sur petit écran, le hero grandit avec
+   son contenu au lieu que le wordmark remonte sous la nav et le bandeau d'infos. */
 .hero-inner {
-  position: absolute;
+  position: relative;
   z-index: 2;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  width: 100%;
   max-width: var(--container-max);
   margin-inline: auto;
   padding-inline: var(--gutter);
@@ -787,6 +877,7 @@ section { padding-block: clamp(3rem, 7vw, 6rem); }
   .hero-tagline,
   .hero-sub { animation: none; opacity: 1; transform: none; }
   .hero-cta-group { animation: none; opacity: 1; }
+  .hero-infobar { animation: none; opacity: 1; }
   .hero-scroll-cue { animation: none; opacity: 0.5; }
   .hero-scroll-cue::after { animation: none; opacity: 1; }
   .motif { opacity: 1; transform: none; transition: none; }
