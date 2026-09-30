@@ -1224,7 +1224,8 @@ section { padding-block: clamp(3rem, 7vw, 6rem); }
 /* Takeout sidebar: frame follows the photo's own 5:3 ratio so nothing is
    cropped, and the caption sits below instead of veiling the picture. */
 .resa-photo--full { aspect-ratio: auto; background: var(--ink); }
-.resa-photo--full img { display: block; height: auto; aspect-ratio: 1400 / 840; object-position: center; }
+.resa-photo--full img { display: block; height: auto; aspect-ratio: 1400 / 840; object-fit: contain; object-position: center; }
+.resa-photo--full:hover img { transform: none; }
 .resa-photo--full figcaption { position: relative; inset: auto; padding: var(--space-sm) var(--space-md) var(--space-md); background: none; }
 .resa-photo-kicker { font-size: 0.72rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.8; }
 .resa-photo-quote { font-family: var(--font-quote); font-style: italic; font-size: 1.3rem; line-height: 1.3; }
