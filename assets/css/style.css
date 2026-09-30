@@ -18,6 +18,7 @@
   --font-display: 'Fraunces', Georgia, serif;
   --font-quote: 'Cormorant Garamond', Georgia, serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-brand-weight: 900;                                 /* Fraunces Black du wordmark "OTTO PIZZA", repris sur tous les titres */
 
   --container-max: 1200px;
   --gutter: clamp(1.25rem, 4vw, 3rem);
@@ -69,9 +70,17 @@ a { color: inherit; }
 
 h1, h2, h3 {
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: var(--font-brand-weight);
   line-height: 1.1;
   margin: 0 0 0.5em;
+}
+
+/* Titres de page et de section : même lettrage que le wordmark de l'accueil
+   (Fraunces Black, capitales, interlettrage serré) pour une typo cohérente. */
+h1, h2 {
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  line-height: 0.98;
 }
 
 h1 { font-size: clamp(2.25rem, 5vw + 1rem, 4rem); }
@@ -132,7 +141,9 @@ h2 { font-size: clamp(1.75rem, 3vw + 1rem, 2.75rem); }
 }
 .site-reveal-mark {
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: var(--font-brand-weight);
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
   font-size: clamp(2.75rem, 9vw, 5.5rem);
   color: var(--ink);
   opacity: 0;
@@ -369,7 +380,7 @@ html.is-revealing { overflow: hidden; }
   margin: 0 0 var(--space-sm);
   color: var(--cream);
   font-family: var(--font-display);
-  font-weight: 900;
+  font-weight: var(--font-brand-weight);
   line-height: 0.86;
   letter-spacing: -0.01em;
   text-transform: uppercase;
