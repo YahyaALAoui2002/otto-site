@@ -4,17 +4,98 @@
 // La commande est enregistrée via window.OttoStore (order-store.js) :
 // SQLite derrière /api quand le site est servi par server/server.js,
 // localStorage sinon. Un client qui revient retrouve ses commandes en haut de page.
+// Même script pour commander.html et en/commander.html : les textes dépendent de <html lang>.
+// Les data-name restent en français (la carte de référence côté serveur) ;
+// en anglais, data-label donne le nom affiché.
+
+const ORDER_I18N = {
+  fr: {
+    locale: 'fr-FR',
+    dayNames: ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'],
+    months: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'],
+    today: 'Auj.',
+    money: (n) => `${n}€`,
+    articles: (n) => `${n} ${n > 1 ? 'articles' : 'article'}`,
+    cartEmpty: 'Votre panier est vide',
+    at: (date, time) => `${date} à ${time}`,
+    recapPickup: (p) => `Retrait ${p}`,
+    summaryPickup: (p) => `retrait ${p}`,
+    summaryNoTime: 'choisissez l\'heure de retrait',
+    submitFailed: 'La commande n’a pas pu être enregistrée. Réessayez, ou appelez-nous au 09 87 14 08 50.',
+    errors: null, // messages du serveur / d'order-store.js, déjà en français
+    toastTitle: (name) => `À tout à l'heure, ${name} !`,
+    toastBody: ({ ref, lines, total, date, slot, email }) =>
+      `Commande ${ref} : ${lines} — ${total}, à régler au retrait. Rendez-vous ${date} à ${slot}, au 53 bis Bd Arago. Un email de confirmation arrive à ${email}.`,
+    status: { pending: 'Reçue', confirmed: 'Confirmée', preparing: 'Au four', ready: 'Prête', collected: 'Retirée', cancelled: 'Annulée' },
+    cancel: 'Annuler',
+    confirmCancel: (ref) => `Annuler la commande ${ref} ?`,
+    reorder: 'Recommander',
+    historyActive: (a, p) => `${a} en cours${p ? ` · ${p} ces 7 derniers jours` : ''}`,
+    historyPast: 'Ces 7 derniers jours',
+    notice: null, // titre et texte fournis tels quels par le store
+  },
+  en: {
+    locale: 'en-GB',
+    dayNames: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    today: 'Today',
+    money: (n) => `€${n}`,
+    articles: (n) => `${n} ${n > 1 ? 'items' : 'item'}`,
+    cartEmpty: 'Your cart is empty',
+    at: (date, time) => `${date} at ${time}`,
+    recapPickup: (p) => `Pickup ${p}`,
+    summaryPickup: (p) => `pickup ${p}`,
+    summaryNoTime: 'choose a pickup time',
+    submitFailed: 'We couldn’t place your order. Please try again, or call us on 09 87 14 08 50.',
+    errors: {
+      slot_unavailable: 'That pickup time is no longer available — please choose another.',
+      invalid_slot: 'That pickup time is no longer available — please choose another.',
+      invalid_date: 'Please choose a valid pickup date.',
+      invalid_items: 'Your cart is empty.',
+      unknown_item: 'One of the dishes in your cart is no longer on the menu.',
+      invalid_quantity: 'Please check the quantities in your cart.',
+      invalid_name: 'Please enter your name.',
+      invalid_email: 'Please enter a valid email address.',
+      invalid_phone: 'Please enter a valid phone number.',
+      rate_limited: 'Too many orders — please try again in a few minutes.',
+      storage_full: 'We couldn’t save your order on this device.',
+      not_found: 'Order not found.',
+      not_cancellable: 'Too late to cancel online — please call us on 09 87 14 08 50.',
+      network: 'The server isn’t responding.',
+    },
+    toastTitle: (name) => `See you soon, ${name}!`,
+    toastBody: ({ ref, lines, total, date, slot, email }) =>
+      `Order ${ref}: ${lines} — ${total}, to pay at pickup. See you ${date} at ${slot}, at 53 bis Bd Arago. A confirmation email is on its way to ${email}.`,
+    status: { pending: 'Received', confirmed: 'Confirmed', preparing: 'In the oven', ready: 'Ready', collected: 'Collected', cancelled: 'Cancelled' },
+    cancel: 'Cancel',
+    confirmCancel: (ref) => `Cancel order ${ref}?`,
+    reorder: 'Order again',
+    historyActive: (a, p) => `${a} in progress${p ? ` · ${p} in the last 7 days` : ''}`,
+    historyPast: 'Last 7 days',
+    // Les notifications sont rédigées en français par le store : on les réécrit ici.
+    notice: {
+      order_received: (ref) => ['Order received', `Order ${ref} received — we’ll confirm it as soon as the oven has it in sight.`],
+      order_confirmed: (ref) => ['Order confirmed', `Order ${ref} is confirmed — pickup at 53 bis Bd Arago.`],
+      order_preparing: (ref) => ['In the oven!', `Your order ${ref} is being prepared.`],
+      order_ready: (ref) => ['Ready at the counter', `Your order ${ref} is waiting for you, piping hot, at 53 bis Bd Arago.`],
+      order_collected: (ref) => ['Buon appetito!', `Thank you for your order ${ref}. See you soon at Otto.`],
+      order_cancelled: (ref) => ['Order cancelled', `Your order ${ref} has been cancelled.`],
+      order_reminder: (ref) => ['Reminder: pickup soon', `Your order ${ref} will be ready shortly at 53 bis Bd Arago. Payment on pickup.`],
+    },
+  },
+};
 
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('order-form');
   if (!form) return;
 
+  const T = ORDER_I18N[document.documentElement.lang === 'en' ? 'en' : 'fr'];
   const MAX_QTY = 9;
   const DAYS_SHOWN = 14;
-  const DAY_NAMES = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
-  const MONTHS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
-  const longDate = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
-  const shortDate = new Intl.DateTimeFormat('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+  const DAY_NAMES = T.dayNames;
+  const MONTHS = T.months;
+  const longDate = new Intl.DateTimeFormat(T.locale, { weekday: 'long', day: 'numeric', month: 'long' });
+  const shortDate = new Intl.DateTimeFormat(T.locale, { weekday: 'short', day: 'numeric', month: 'short' });
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const store = window.OttoStore || null;
 
@@ -40,10 +121,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // ---- Panier ----
   const items = [...form.querySelectorAll('.order-item')];
   const priceOf = (name) => Number(items.find((li) => li.dataset.name === name).dataset.price);
+  const labelOf = (name) => items.find((li) => li.dataset.name === name)?.dataset.label || name;
   const cartCount = () => [...state.cart.values()].reduce((n, q) => n + q, 0);
   const cartTotal = () => [...state.cart].reduce((t, [name, q]) => t + q * priceOf(name), 0);
   const pickedTime = () => form.querySelector('input[name="time"]:checked');
-  const articles = (n) => `${n} ${n > 1 ? 'articles' : 'article'}`;
+  const articles = T.articles;
 
   const renderItem = (li) => {
     const qty = state.cart.get(li.dataset.name) || 0;
@@ -108,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.setAttribute('role', 'radio');
     btn.dataset.date = toISO(d);
     btn.setAttribute('aria-label', longDate.format(d));
-    btn.innerHTML = `<span class="resa-day-name">${i === 0 ? 'Auj.' : DAY_NAMES[d.getDay()]}</span>`
+    btn.innerHTML = `<span class="resa-day-name">${i === 0 ? T.today : DAY_NAMES[d.getDay()]}</span>`
       + `<span class="resa-day-num">${d.getDate()}</span>`
       + `<span class="resa-day-month">${MONTHS[d.getMonth()]}</span>`;
     daysEl.appendChild(btn);
@@ -174,11 +256,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // ---- Récap vivant : barre de l'étape 1, panier latéral, repères d'étapes, bouton final ----
   function refreshSummary() {
     const n = cartCount();
-    const total = `${cartTotal()}€`;
+    const total = T.money(cartTotal());
     const time = pickedTime();
-    const pickup = time ? `${longDate.format(fromISO(state.date))} à ${time.value}` : '';
+    const pickup = time ? T.at(longDate.format(fromISO(state.date)), time.value) : '';
 
-    $('order-bar-count').textContent = n ? articles(n) : 'Votre panier est vide';
+    $('order-bar-count').textContent = n ? articles(n) : T.cartEmpty;
     $('order-bar-amount').textContent = total;
     form.querySelector('.order-bar').classList.toggle('is-filled', n > 0);
 
@@ -187,21 +269,21 @@ document.addEventListener('DOMContentLoaded', () => {
       const li = document.createElement('li');
       li.innerHTML = '<span class="order-recap-qty"></span><span class="order-recap-name"></span><span class="order-recap-price"></span>';
       li.children[0].textContent = `${q}×`;
-      li.children[1].textContent = name;
-      li.children[2].textContent = `${q * priceOf(name)}€`;
+      li.children[1].textContent = labelOf(name);
+      li.children[2].textContent = T.money(q * priceOf(name));
       return li;
     }));
     $('order-recap-empty').hidden = n > 0;
     $('order-recap-total').textContent = total;
     const recapPickup = $('order-recap-pickup');
     recapPickup.hidden = !time;
-    recapPickup.textContent = time ? `Retrait ${pickup}` : '';
+    recapPickup.textContent = time ? T.recapPickup(pickup) : '';
 
     form.querySelector('[data-meta="1"]').textContent = n ? `${articles(n)} · ${total}` : '';
     form.querySelector('[data-meta="2"]').textContent = time ? `${shortDate.format(fromISO(state.date))} · ${time.value}` : '';
 
-    if (!n) { summary.textContent = 'Votre panier est vide'; return; }
-    summary.textContent = time ? `${articles(n)} · ${total} · retrait ${pickup}` : `${articles(n)} · ${total} · choisissez l'heure de retrait`;
+    if (!n) { summary.textContent = T.cartEmpty; return; }
+    summary.textContent = `${articles(n)} · ${total} · ${time ? T.summaryPickup(pickup) : T.summaryNoTime}`;
   }
   form.addEventListener('change', (e) => {
     if (e.target.name === 'time') {
@@ -321,7 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
         notes: form.elements.notes.value,
       });
     } catch (err) {
-      submitError.textContent = err.message || 'La commande n’a pas pu être enregistrée. Réessayez, ou appelez-nous au 09 87 14 08 50.';
+      submitError.textContent = errorText(err);
       submitError.hidden = false;
       // Créneau passé ou complet entre-temps : retour au choix de l'heure.
       if (err.code === 'slot_unavailable') { refreshSlots(); showStep(2); timeError.hidden = false; }
@@ -333,10 +415,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const name = order.customer.name.split(' ')[0];
     const d = longDate.format(fromISO(order.pickup.date));
-    const lines = order.items.map((i) => `${i.quantity} × ${i.name}`).join(', ');
-    $('resa-toast-title').textContent = `À tout à l'heure, ${name} !`;
-    $('resa-toast-body').textContent =
-      `Commande ${order.ref} : ${lines} — ${euros(order.totalCents)}, à régler au retrait. Rendez-vous ${d} à ${order.pickup.slot}, au 53 bis Bd Arago. Un email de confirmation arrive à ${order.customer.email}.`;
+    const lines = order.items.map((i) => `${i.quantity} × ${labelOf(i.name)}`).join(', ');
+    $('resa-toast-title').textContent = T.toastTitle(name);
+    $('resa-toast-body').textContent = T.toastBody({
+      ref: order.ref, lines, total: euros(order.totalCents), date: d, slot: order.pickup.slot, email: order.customer.email,
+    });
     // L'accusé de réception vient d'être affiché : inutile de le reproposer en notification.
     store.listNotifications()
       .then((ns) => store.markNotificationsRead(ns.filter((n) => n.orderId === order.id && n.kind === 'order_received').map((n) => n.id)))
@@ -366,14 +449,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ---- Client qui revient : commandes en cours, historique de la semaine, notifications ----
   const history = $('order-history');
-  const STATUS_LABELS = {
-    pending: 'Reçue', confirmed: 'Confirmée', preparing: 'Au four', ready: 'Prête', collected: 'Retirée', cancelled: 'Annulée',
-  };
+  const STATUS_LABELS = T.status;
   const POLL_MS = 45000;
   let pollTimer = null;
   let profile = null;
 
-  function euros(cents) { return `${(cents / 100).toLocaleString('fr-FR', { maximumFractionDigits: 2 })}€`; }
+  function euros(cents) { return T.money((cents / 100).toLocaleString(T.locale, { maximumFractionDigits: 2 })); }
+
+  // En français, le message du store s'affiche tel quel ; sinon on le traduit d'après son code.
+  function errorText(err) {
+    if (!T.errors) return err.message || T.submitFailed;
+    return T.errors[err.code] || T.submitFailed;
+  }
 
   function prefillContact() {
     if (!profile) return;
@@ -401,7 +488,7 @@ document.addEventListener('DOMContentLoaded', () => {
     li.querySelector('.order-history-ref').textContent = order.ref;
     li.querySelector('.order-history-status').textContent = STATUS_LABELS[order.status] || order.status;
     li.querySelector('.order-history-when').textContent = `${longDate.format(fromISO(order.pickup.date))} · ${order.pickup.slot}`;
-    li.querySelector('.order-history-lines').textContent = order.items.map((i) => `${i.quantity}× ${i.name}`).join(', ');
+    li.querySelector('.order-history-lines').textContent = order.items.map((i) => `${i.quantity}× ${labelOf(i.name)}`).join(', ');
     li.querySelector('.order-history-total').textContent = euros(order.totalCents);
     const actions = li.querySelector('.order-history-actions');
     const action = (label, fn, cls = '') => {
@@ -414,14 +501,14 @@ document.addEventListener('DOMContentLoaded', () => {
       return b;
     };
     if (order.cancellable) {
-      const btn = action('Annuler', async () => {
-        if (!window.confirm(`Annuler la commande ${order.ref} ?`)) return;
+      const btn = action(T.cancel, async () => {
+        if (!window.confirm(T.confirmCancel(order.ref))) return;
         btn.disabled = true;
-        try { await store.cancelOrder(order.id); } catch (err) { window.alert(err.message); }
+        try { await store.cancelOrder(order.id); } catch (err) { window.alert(errorText(err)); }
         refreshHistory();
       }, 'is-quiet');
     }
-    if (!order.active) action('Recommander', () => reorder(order));
+    if (!order.active) action(T.reorder, () => reorder(order));
     return li;
   }
 
@@ -435,8 +522,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const { active, past } = data;
     history.hidden = !active.length && !past.length;
     $('order-history-sub').textContent = active.length
-      ? `${active.length} en cours${past.length ? ` · ${past.length} ces 7 derniers jours` : ''}`
-      : 'Ces 7 derniers jours';
+      ? T.historyActive(active.length, past.length)
+      : T.historyPast;
     $('order-active').replaceChildren(...active.map(renderOrder));
     $('order-past').replaceChildren(...past.map(renderOrder));
     $('order-past-wrap').hidden = !past.length;
@@ -450,8 +537,9 @@ document.addEventListener('DOMContentLoaded', () => {
       li.className = 'order-history-notice';
       li.dataset.kind = n.kind;
       li.innerHTML = '<p><strong></strong> <span></span></p><button type="button" class="order-history-btn is-quiet">OK</button>';
-      li.querySelector('strong').textContent = n.title;
-      li.querySelector('p span').textContent = n.body;
+      const [title, body] = T.notice?.[n.kind]?.(n.orderRef) || [n.title, n.body];
+      li.querySelector('strong').textContent = title;
+      li.querySelector('p span').textContent = body;
       li.querySelector('button').addEventListener('click', async () => {
         await store.markNotificationsRead([n.id]);
         li.remove();
