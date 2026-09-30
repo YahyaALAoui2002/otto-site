@@ -1427,6 +1427,12 @@ section { padding-block: clamp(3rem, 7vw, 6rem); }
 .gallery-item a:focus-visible img { transform: scale(1.04); filter: saturate(1.08); }
 .gallery-item.is-entering { animation: gallery-in 0.45s var(--ease-out) both; }
 @keyframes gallery-in { from { opacity: 0; transform: translateY(8px); } }
+/* Link tile (« Vente à emporter » → commander.html): the lettering runs edge
+   to edge, so show the whole photo instead of cropping it to the cell. */
+.gallery-item--link { background: var(--ink); }
+.gallery-item--link img { object-fit: contain; }
+.gallery-item--link a:hover img,
+.gallery-item--link a:focus-visible img { transform: none; }
 
 /* Lightbox */
 .lightbox {

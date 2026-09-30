@@ -32,7 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const caption = dialog.querySelector('figcaption');
   let current = 0;
 
-  const visible = () => items.filter((item) => !item.hidden);
+  // Link tiles (e.g. « Vente à emporter » → order page) navigate instead of opening the lightbox.
+  const visible = () => items.filter((item) => !item.hidden && !item.classList.contains('gallery-item--link'));
   const show = (index) => {
     const list = visible();
     current = (index + list.length) % list.length;
@@ -44,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   grid.addEventListener('click', (event) => {
     const link = event.target.closest('.gallery-item a');
-    if (!link) return;
+    if (!link || link.parentElement.classList.contains('gallery-item--link')) return;
     event.preventDefault();
     show(visible().indexOf(link.parentElement));
     dialog.showModal();
