@@ -35,6 +35,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Language menu — a native <details>; close it on outside click or Escape.
+  const langMenu = document.querySelector('.lang-menu');
+  if (langMenu) {
+    document.addEventListener('click', (e) => {
+      if (langMenu.open && !langMenu.contains(e.target)) langMenu.open = false;
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && langMenu.open) {
+        langMenu.open = false;
+        langMenu.querySelector('summary').focus();
+      }
+    });
+  }
+
   // Motif reveal — docs/03 §3: one-time stroke-in, no repeat on re-scroll.
   const motifs = document.querySelectorAll('.motif');
   if (motifs.length && 'IntersectionObserver' in window) {

@@ -39,6 +39,17 @@
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Chinese and Japanese pages: Fraunces/Inter have no CJK glyphs, so name a
+   matching serif (titles) and sans (body) instead of the browser's default. */
+:root:lang(ja) {
+  --font-display: 'Fraunces', 'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif JP', serif;
+  --font-body: 'Inter', 'Hiragino Sans', 'Yu Gothic UI', 'Meiryo', 'Noto Sans JP', sans-serif;
+}
+:root:lang(zh) {
+  --font-display: 'Fraunces', 'Songti SC', 'STSong', 'Noto Serif SC', 'SimSun', serif;
+  --font-body: 'Inter', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+}
+
 *, *::before, *::after { box-sizing: border-box; }
 
 html { scroll-behavior: smooth; }
@@ -237,19 +248,66 @@ html.is-revealing { overflow: hidden; }
   gap: 1.25rem;
 }
 
-.lang-toggle {
-  display: flex;
-  gap: 0.35rem;
-  font-family: var(--font-body);
+/* Language menu — a <details> dropdown (works without JS; main.js closes it
+   on outside click / Escape). Ten languages, so a list rather than a toggle. */
+.lang-menu { position: relative; font-family: var(--font-body); }
+.lang-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.65rem 0.4rem 0.55rem;
+  border: 1px solid rgba(var(--ink-rgb), 0.18);
+  border-radius: 999px;
+  font-size: 0.8rem;
   font-weight: 500;
-  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
 }
-.lang-toggle a {
+.lang-menu-btn::-webkit-details-marker { display: none; }
+.lang-menu-btn:hover,
+.lang-menu[open] .lang-menu-btn { border-color: var(--terracotta); background: rgba(var(--terracotta-rgb), 0.06); }
+.lang-menu-globe { width: 16px; height: 16px; fill: none; stroke: var(--olive); stroke-width: 1.5; }
+.lang-menu-chevron { width: 10px; height: 10px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.25s var(--ease-out); }
+.lang-menu[open] .lang-menu-chevron { transform: rotate(180deg); }
+.lang-menu-list {
+  position: absolute;
+  top: calc(100% + 0.6rem);
+  right: 0;
+  z-index: 60;
+  min-width: 13rem;
+  margin: 0;
+  padding: 0.4rem;
+  list-style: none;
+  background: var(--cream-carte);
+  border: 1px solid rgba(var(--ink-rgb), 0.1);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  animation: lang-menu-in 0.22s var(--ease-out);
+}
+@keyframes lang-menu-in { from { opacity: 0; transform: translateY(-4px); } }
+.lang-menu-list a {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius);
+  font-size: 0.92rem;
   text-decoration: none;
-  padding: 0.15em 0.4em;
-  color: rgba(var(--ink-rgb), 0.55);
+  color: var(--ink);
 }
-.lang-toggle a[aria-current="true"] { color: var(--ink); border-bottom: 1px solid var(--terracotta); }
+.lang-menu-list a:hover { background: rgba(var(--sage-rgb), 0.55); }
+.lang-menu-list a[aria-current="true"] { color: var(--terracotta); font-weight: 500; }
+.lang-menu-list a[aria-current="true"] .lang-menu-name::before { content: '·'; margin-right: 0.4em; }
+.lang-menu-code { font-size: 0.7rem; letter-spacing: 0.08em; color: rgba(var(--ink-rgb), 0.45); }
+@media (prefers-reduced-motion: reduce) {
+  .lang-menu-list { animation: none; }
+  .lang-menu-chevron { transition: none; }
+}
 
 .nav-toggle {
   display: inline-flex;
@@ -696,9 +754,8 @@ section { padding-block: clamp(3rem, 7vw, 6rem); }
   margin: 0;
   font-size: 0.95rem;
   color: rgba(var(--ink-rgb), 0.75);
-  white-space: nowrap;
 }
-.reviews-rating-stars { color: var(--terracotta); font-size: 1rem; letter-spacing: 0.05em; }
+.reviews-rating-stars { color: var(--terracotta); font-size: 1rem; letter-spacing: 0.05em; white-space: nowrap; }
 .reviews-rating strong { color: var(--ink); font-family: var(--font-display); font-size: 1.15rem; }
 
 .reviews-viewport {
@@ -901,10 +958,20 @@ section { padding-block: clamp(3rem, 7vw, 6rem); }
 }
 .site-footer a { color: var(--cream); text-decoration: none; opacity: 0.85; }
 .site-footer a:hover { opacity: 1; }
-/* Nav's lang-toggle colors are tuned for a cream background and go near-invisible
-   on the footer's dark ground (near-black on near-black) — override for context. */
-.site-footer .lang-toggle a { color: rgba(var(--cream-rgb), 0.6); opacity: 1; }
-.site-footer .lang-toggle a[aria-current="true"] { color: var(--cream); border-bottom-color: var(--terracotta); }
+/* Footer: every language listed in its own name, small and wrapping. */
+.lang-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.9rem;
+  max-width: 22rem;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.85rem;
+}
+.site-footer .lang-list a { color: rgba(var(--cream-rgb), 0.6); opacity: 1; padding-bottom: 2px; }
+.site-footer .lang-list a:hover { color: var(--cream); }
+.site-footer .lang-list a[aria-current="true"] { color: var(--cream); border-bottom: 1px solid var(--terracotta); }
 .footer-copyright {
   margin-top: 2.5rem;
   padding-top: 1.5rem;
